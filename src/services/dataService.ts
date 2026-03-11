@@ -78,6 +78,27 @@ export async function fetchDesignatedCities(prefId?: string): Promise<Region[]> 
     return regions;
 }
 
+export function mergeCitiesWithDesignated(
+    cities: Region[],
+    designated: Region[],
+): Region[] {
+    if (!designated.length) {
+        return cities;
+    }
+
+    const prefixes = designated.map((d) => d.name);
+
+    const filteredCities = cities.filter((c) => {
+        return !prefixes.some((p) => c.name.startsWith(p) && c.name !== p);
+    });
+
+    const merged = [...filteredCities, ...designated].sort((a, b) =>
+        a.name.localeCompare(b.name, 'ja'),
+    );
+
+    return merged;
+}
+
 function getTargetLevel(mode: GameMode): RegionLevel {
     switch (mode) {
         case 'country':
@@ -91,7 +112,7 @@ function getTargetLevel(mode: GameMode): RegionLevel {
 
 export async function fetchRandomTarget(
     mode: GameMode,
-    parentId?: string
+    parentId?: string,
 ): Promise<Region> {
     const targetLevel = getTargetLevel(mode);
     const regions = await fetchRegions(targetLevel, parentId);
@@ -100,11 +121,10 @@ export async function fetchRandomTarget(
         throw new Error(`No regions found for mode=${mode}, parentId=${parentId}`);
     }
 
-    const index = Math.floor(Math.random() * regions.length);
-    return regions[index];
+    return pickRandom(regions);
 }
 
-function pickRandom<T>(items: T[]): T {
+export function pickRandom<T>(items: T[]): T {
     const index = Math.floor(Math.random() * items.length);
     return items[index];
 }

@@ -5,6 +5,9 @@ import {
     fetchRegions,
     fetchRandomTargetFromDesignatedCity,
     getWardIdsForDesignatedCity,
+    fetchDesignatedCities,
+    mergeCitiesWithDesignated,
+    pickRandom,
 } from './services/dataService';
 import Header from './components/Header';
 import RegionSelector from './components/RegionSelector';
@@ -80,9 +83,7 @@ export default function App() {
             case 'prefecture':
                 return prefectureName || undefined;
             case 'city':
-                return cityName
-                    ? `${prefectureName} ${cityName}`
-                    : prefectureName || undefined;
+                return cityName || undefined;
         }
     }, [mode, prefectureName, cityName]);
 
@@ -96,6 +97,7 @@ export default function App() {
 
             try {
                 let selected: Region;
+                let parentForResult: string | undefined = resolveParentName();
 
                 if (
                     mode === 'city' &&
@@ -103,9 +105,30 @@ export default function App() {
                     selectedCity.startsWith('DC-') &&
                     selectedPrefecture
                 ) {
+                    // 市区町村内モードで政令指定都市をまとめている場合は、
+                    // ランダムに選ばれた町に対応する「区・市」の名前を親として表示する
                     const allCities = await fetchRegions('city', selectedPrefecture);
                     const wardIds = getWardIdsForDesignatedCity(selectedCity, allCities);
                     selected = await fetchRandomTargetFromDesignatedCity(wardIds);
+
+                    const ward = allCities.find((c) => c.id === selected.parentId);
+                    if (ward) {
+                        parentForResult = ward.name;
+                    }
+                } else if (mode === 'prefecture' && mergeDesignatedCities && selectedPrefecture) {
+                    const [cities, designated] = await Promise.all([
+                        fetchRegions('city', selectedPrefecture),
+                        fetchDesignatedCities(selectedPrefecture),
+                    ]);
+
+                    const merged = mergeCitiesWithDesignated(cities, designated);
+                    if (!merged.length) {
+                        throw new Error(
+                            `No cities found for prefecture=${selectedPrefecture} (merged view)`,
+                        );
+                    }
+
+                    selected = pickRandom(merged);
                 } else {
                     const parentId = getParentId();
                     selected = await fetchRandomTarget(mode, parentId);
@@ -114,7 +137,7 @@ export default function App() {
                 // Wait for dart to land before showing result
                 setTimeout(() => {
                     setResult(selected);
-                    setParentName(resolveParentName());
+                    setParentName(parentForResult);
                     setShowModal(true);
                     setIsAnimating(false);
                 }, 800);
@@ -123,7 +146,15 @@ export default function App() {
                 setIsAnimating(false);
             }
         },
-        [isAnimating, mode, getParentId, resolveParentName, selectedCity, selectedPrefecture]
+        [
+            isAnimating,
+            mode,
+            getParentId,
+            resolveParentName,
+            selectedCity,
+            selectedPrefecture,
+            mergeDesignatedCities,
+        ]
     );
 
     const handleDrillDown = useCallback(

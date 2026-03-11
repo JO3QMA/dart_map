@@ -1,7 +1,11 @@
 import { useEffect, useState } from 'react';
 import { Globe, MapPin, Building2 } from 'lucide-react';
 import type { GameMode, Region } from '../types';
-import { fetchRegions, fetchDesignatedCities } from '../services/dataService';
+import {
+    fetchRegions,
+    fetchDesignatedCities,
+    mergeCitiesWithDesignated,
+} from '../services/dataService';
 
 interface RegionSelectorProps {
     mode: GameMode;
@@ -66,21 +70,7 @@ export default function RegionSelector({
             const designated = await fetchDesignatedCities(selectedPrefecture);
             if (cancelled) return;
 
-            if (!designated.length) {
-                setDisplayCities(cities);
-                return;
-            }
-
-            const prefixes = designated.map((d) => d.name);
-
-            const filteredCities = cities.filter((c) => {
-                return !prefixes.some((p) => c.name.startsWith(p) && c.name !== p);
-            });
-
-            const merged = [...filteredCities, ...designated].sort((a, b) =>
-                a.name.localeCompare(b.name, 'ja'),
-            );
-
+            const merged = mergeCitiesWithDesignated(cities, designated);
             setDisplayCities(merged);
         })();
 
@@ -148,8 +138,8 @@ export default function RegionSelector({
                 </div>
             )}
 
-            {/* City toggle & selector */}
-            {mode === 'city' && selectedPrefecture && (
+            {/* Designated city toggle & city selector */}
+            {selectedPrefecture && (mode === 'prefecture' || mode === 'city') && (
                 <div className="mt-3 flex flex-col gap-2 animate-fade-in">
                     <label className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer select-none">
                         <input
@@ -161,24 +151,26 @@ export default function RegionSelector({
                         政令指定都市の区をまとめる
                     </label>
 
-                    <div className="flex items-center gap-3">
-                        <label className="text-sm font-semibold text-gray-600">
-                            🏙️ 市区町村
-                        </label>
-                        <select
-                            id="city-select"
-                            className="select-styled"
-                            value={selectedCity || ''}
-                            onChange={(e) => onCityChange(e.target.value || null)}
-                        >
-                            <option value="">選択してください</option>
-                            {displayCities.map((c) => (
-                                <option key={c.id} value={c.id}>
-                                    {c.name}
-                                </option>
-                            ))}
-                        </select>
-                    </div>
+                    {mode === 'city' && (
+                        <div className="flex items-center gap-3">
+                            <label className="text-sm font-semibold text-gray-600">
+                                🏙️ 市区町村
+                            </label>
+                            <select
+                                id="city-select"
+                                className="select-styled"
+                                value={selectedCity || ''}
+                                onChange={(e) => onCityChange(e.target.value || null)}
+                            >
+                                <option value="">選択してください</option>
+                                {displayCities.map((c) => (
+                                    <option key={c.id} value={c.id}>
+                                        {c.name}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+                    )}
                 </div>
             )}
 
