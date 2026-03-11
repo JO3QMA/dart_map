@@ -2,6 +2,31 @@ import type { Region, RegionLevel, GameMode } from '../types';
 
 const cache: Record<string, Region[]> = {};
 
+export const DESIGNATED_CITY_NAMES: string[] = [
+    '札幌市',
+    '仙台市',
+    'さいたま市',
+    '千葉市',
+    '横浜市',
+    '川崎市',
+    '相模原市',
+    '新潟市',
+    '静岡市',
+    '浜松市',
+    '名古屋市',
+    '京都市',
+    '大阪市',
+    '堺市',
+    '神戸市',
+    '岡山市',
+    '広島市',
+    '北九州市',
+    '福岡市',
+    '熊本市',
+];
+
+let designatedCitiesCache: Region[] | null = null;
+
 async function loadData(level: RegionLevel): Promise<Region[]> {
     const fileMap: Record<RegionLevel, string> = {
         country: '',
@@ -23,6 +48,17 @@ async function loadData(level: RegionLevel): Promise<Region[]> {
     return data;
 }
 
+async function loadDesignatedCities(): Promise<Region[]> {
+    if (designatedCitiesCache) {
+        return designatedCitiesCache;
+    }
+
+    const response = await fetch('/data/designated_cities.json');
+    const data: Region[] = await response.json();
+    designatedCitiesCache = data;
+    return data;
+}
+
 export async function fetchRegions(
     level: RegionLevel,
     parentId?: string
@@ -30,6 +66,14 @@ export async function fetchRegions(
     const regions = await loadData(level);
     if (parentId) {
         return regions.filter((r) => r.parentId === parentId);
+    }
+    return regions;
+}
+
+export async function fetchDesignatedCities(prefId?: string): Promise<Region[]> {
+    const regions = await loadDesignatedCities();
+    if (prefId) {
+        return regions.filter((r) => r.parentId === prefId);
     }
     return regions;
 }
@@ -58,6 +102,46 @@ export async function fetchRandomTarget(
 
     const index = Math.floor(Math.random() * regions.length);
     return regions[index];
+}
+
+function pickRandom<T>(items: T[]): T {
+    const index = Math.floor(Math.random() * items.length);
+    return items[index];
+}
+
+export function getWardIdsForDesignatedCity(
+    designatedCityIdOrName: string,
+    allCities: Region[],
+): string[] {
+    let prefix = designatedCityIdOrName;
+
+    if (designatedCityIdOrName.startsWith('DC-')) {
+        const parts = designatedCityIdOrName.split('-').slice(2);
+        prefix = parts.join('-');
+    }
+
+    if (!DESIGNATED_CITY_NAMES.includes(prefix)) {
+        return [];
+    }
+
+    return allCities
+        .filter((c) => c.name.startsWith(prefix) && c.name !== prefix)
+        .map((c) => c.id);
+}
+
+export async function fetchRandomTargetFromDesignatedCity(wardIds: string[]): Promise<Region> {
+    if (!wardIds.length) {
+        throw new Error('No ward ids found for designated city');
+    }
+
+    const towns = await fetchRegions('town');
+    const candidates = towns.filter((t) => t.parentId && wardIds.includes(t.parentId));
+
+    if (!candidates.length) {
+        throw new Error('No towns found for designated city wards');
+    }
+
+    return pickRandom(candidates);
 }
 
 export function getNextMode(currentMode: GameMode): GameMode | null {

@@ -1,6 +1,11 @@
 import { useState, useCallback, useEffect } from 'react';
 import type { Region, GameMode } from './types';
-import { fetchRandomTarget, fetchRegions } from './services/dataService';
+import {
+    fetchRandomTarget,
+    fetchRegions,
+    fetchRandomTargetFromDesignatedCity,
+    getWardIdsForDesignatedCity,
+} from './services/dataService';
 import Header from './components/Header';
 import RegionSelector from './components/RegionSelector';
 import InteractiveMap from './components/InteractiveMap';
@@ -14,6 +19,8 @@ export default function App() {
     const [parentName, setParentName] = useState<string | undefined>(undefined);
     const [isAnimating, setIsAnimating] = useState(false);
     const [showModal, setShowModal] = useState(false);
+
+    const [mergeDesignatedCities, setMergeDesignatedCities] = useState<boolean>(false);
 
     // Resolve the parent name for display
     const [prefectureName, setPrefectureName] = useState<string>('');
@@ -32,6 +39,13 @@ export default function App() {
 
     useEffect(() => {
         if (selectedCity && selectedPrefecture) {
+            if (selectedCity.startsWith('DC-')) {
+                const parts = selectedCity.split('-').slice(2);
+                const name = parts.join('-');
+                setCityName(name || '');
+                return;
+            }
+
             fetchRegions('city', selectedPrefecture).then((regions) => {
                 const found = regions.find((r) => r.id === selectedCity);
                 setCityName(found?.name || '');
@@ -81,8 +95,21 @@ export default function App() {
             setIsAnimating(true);
 
             try {
-                const parentId = getParentId();
-                const selected = await fetchRandomTarget(mode, parentId);
+                let selected: Region;
+
+                if (
+                    mode === 'city' &&
+                    selectedCity &&
+                    selectedCity.startsWith('DC-') &&
+                    selectedPrefecture
+                ) {
+                    const allCities = await fetchRegions('city', selectedPrefecture);
+                    const wardIds = getWardIdsForDesignatedCity(selectedCity, allCities);
+                    selected = await fetchRandomTargetFromDesignatedCity(wardIds);
+                } else {
+                    const parentId = getParentId();
+                    selected = await fetchRandomTarget(mode, parentId);
+                }
 
                 // Wait for dart to land before showing result
                 setTimeout(() => {
@@ -96,7 +123,7 @@ export default function App() {
                 setIsAnimating(false);
             }
         },
-        [isAnimating, mode, getParentId, resolveParentName]
+        [isAnimating, mode, getParentId, resolveParentName, selectedCity, selectedPrefecture]
     );
 
     const handleDrillDown = useCallback(
@@ -134,6 +161,8 @@ export default function App() {
                     onPrefectureChange={setSelectedPrefecture}
                     selectedCity={selectedCity}
                     onCityChange={setSelectedCity}
+                    mergeDesignatedCities={mergeDesignatedCities}
+                    onMergeDesignatedCitiesChange={setMergeDesignatedCities}
                 />
 
                 <InteractiveMap

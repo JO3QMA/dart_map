@@ -7,6 +7,31 @@ import type { Region } from '../src/types';
 
 type RegionType = Region['type'];
 
+// 統合市名 → cities.json の name プレフィックスのマッピング
+// 区名は必ず「<市名><区名>」形式になっているため、startsWith で判定できる
+const DESIGNATED_CITIES: { name: string; prefix: string }[] = [
+  { name: '札幌市', prefix: '札幌市' },
+  { name: '仙台市', prefix: '仙台市' },
+  { name: 'さいたま市', prefix: 'さいたま市' },
+  { name: '千葉市', prefix: '千葉市' },
+  { name: '横浜市', prefix: '横浜市' },
+  { name: '川崎市', prefix: '川崎市' },
+  { name: '相模原市', prefix: '相模原市' },
+  { name: '新潟市', prefix: '新潟市' },
+  { name: '静岡市', prefix: '静岡市' },
+  { name: '浜松市', prefix: '浜松市' },
+  { name: '名古屋市', prefix: '名古屋市' },
+  { name: '京都市', prefix: '京都市' },
+  { name: '大阪市', prefix: '大阪市' },
+  { name: '堺市', prefix: '堺市' },
+  { name: '神戸市', prefix: '神戸市' },
+  { name: '岡山市', prefix: '岡山市' },
+  { name: '広島市', prefix: '広島市' },
+  { name: '北九州市', prefix: '北九州市' },
+  { name: '福岡市', prefix: '福岡市' },
+  { name: '熊本市', prefix: '熊本市' },
+];
+
 const JA_JSON_URL = 'https://geolonia.github.io/japanese-addresses/api/ja.json';
 
 type JaJson = Record<string, string[]>;
@@ -113,6 +138,29 @@ async function fetchCityData(
     console.error(`Failed to fetch city data for ${prefName} / ${cityName}:`, e);
     return { cityPoint: null, townPoints: new Map() };
   }
+}
+
+function buildDesignatedCities(cities: Region[]): Region[] {
+  const result: Region[] = [];
+
+  for (const def of DESIGNATED_CITIES) {
+    const wards = cities.filter((c) => c.name.startsWith(def.prefix) && c.name !== def.name);
+    if (!wards.length) continue;
+
+    const lat = wards.reduce((s, w) => s + w.coordinate.lat, 0) / wards.length;
+    const lng = wards.reduce((s, w) => s + w.coordinate.lng, 0) / wards.length;
+    const prefId = wards[0].parentId!;
+
+    result.push({
+      id: `DC-${prefId}-${def.prefix}`,
+      type: 'city',
+      name: def.name,
+      coordinate: { lat, lng },
+      parentId: prefId,
+    });
+  }
+
+  return result;
 }
 
 // --- 都道府県・市区町村 Region を生成 ---
@@ -227,7 +275,12 @@ async function main() {
   writeJson(path.join(publicDataDir, 'cities.json'), cities);
   writeJson(path.join(publicDataDir, 'towns.json'), towns);
 
-  console.log('Written prefectures.json, cities.json and towns.json under public/data.');
+  const designatedCities = buildDesignatedCities(cities);
+  writeJson(path.join(publicDataDir, 'designated_cities.json'), designatedCities);
+
+  console.log(
+    'Written prefectures.json, cities.json, towns.json and designated_cities.json under public/data.',
+  );
 }
 
 main().catch((err) => {

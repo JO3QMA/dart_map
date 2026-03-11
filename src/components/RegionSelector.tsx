@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Globe, MapPin, Building2 } from 'lucide-react';
 import type { GameMode, Region } from '../types';
-import { fetchRegions } from '../services/dataService';
+import { fetchRegions, fetchDesignatedCities } from '../services/dataService';
 
 interface RegionSelectorProps {
     mode: GameMode;
@@ -10,6 +10,8 @@ interface RegionSelectorProps {
     onPrefectureChange: (id: string | null) => void;
     selectedCity: string | null;
     onCityChange: (id: string | null) => void;
+    mergeDesignatedCities: boolean;
+    onMergeDesignatedCitiesChange: (v: boolean) => void;
 }
 
 const MODE_OPTIONS: { value: GameMode; label: string; icon: typeof Globe }[] = [
@@ -25,9 +27,12 @@ export default function RegionSelector({
     onPrefectureChange,
     selectedCity,
     onCityChange,
+    mergeDesignatedCities,
+    onMergeDesignatedCitiesChange,
 }: RegionSelectorProps) {
     const [prefectures, setPrefectures] = useState<Region[]>([]);
     const [cities, setCities] = useState<Region[]>([]);
+    const [displayCities, setDisplayCities] = useState<Region[]>([]);
 
     // Load prefectures
     useEffect(() => {
@@ -42,6 +47,47 @@ export default function RegionSelector({
             setCities([]);
         }
     }, [selectedPrefecture]);
+
+    // Build displayCities depending on mergeDesignatedCities toggle
+    useEffect(() => {
+        if (!selectedPrefecture) {
+            setDisplayCities([]);
+            return;
+        }
+
+        if (!mergeDesignatedCities) {
+            setDisplayCities(cities);
+            return;
+        }
+
+        let cancelled = false;
+
+        (async () => {
+            const designated = await fetchDesignatedCities(selectedPrefecture);
+            if (cancelled) return;
+
+            if (!designated.length) {
+                setDisplayCities(cities);
+                return;
+            }
+
+            const prefixes = designated.map((d) => d.name);
+
+            const filteredCities = cities.filter((c) => {
+                return !prefixes.some((p) => c.name.startsWith(p) && c.name !== p);
+            });
+
+            const merged = [...filteredCities, ...designated].sort((a, b) =>
+                a.name.localeCompare(b.name, 'ja'),
+            );
+
+            setDisplayCities(merged);
+        })();
+
+        return () => {
+            cancelled = true;
+        };
+    }, [cities, mergeDesignatedCities, selectedPrefecture]);
 
     // Reset selections when mode changes
     const handleModeChange = (newMode: GameMode) => {
@@ -99,28 +145,40 @@ export default function RegionSelector({
                             </option>
                         ))}
                     </select>
+                </div>
+            )}
 
-                    {/* City selector */}
-                    {mode === 'city' && selectedPrefecture && (
-                        <div className="flex items-center gap-3 animate-fade-in">
-                            <label className="text-sm font-semibold text-gray-600">
-                                🏙️ 市区町村
-                            </label>
-                            <select
-                                id="city-select"
-                                className="select-styled"
-                                value={selectedCity || ''}
-                                onChange={(e) => onCityChange(e.target.value || null)}
-                            >
-                                <option value="">選択してください</option>
-                                {cities.map((c) => (
-                                    <option key={c.id} value={c.id}>
-                                        {c.name}
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
-                    )}
+            {/* City toggle & selector */}
+            {mode === 'city' && selectedPrefecture && (
+                <div className="mt-3 flex flex-col gap-2 animate-fade-in">
+                    <label className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer select-none">
+                        <input
+                            type="checkbox"
+                            checked={mergeDesignatedCities}
+                            onChange={(e) => onMergeDesignatedCitiesChange(e.target.checked)}
+                            className="w-4 h-4"
+                        />
+                        政令指定都市の区をまとめる
+                    </label>
+
+                    <div className="flex items-center gap-3">
+                        <label className="text-sm font-semibold text-gray-600">
+                            🏙️ 市区町村
+                        </label>
+                        <select
+                            id="city-select"
+                            className="select-styled"
+                            value={selectedCity || ''}
+                            onChange={(e) => onCityChange(e.target.value || null)}
+                        >
+                            <option value="">選択してください</option>
+                            {displayCities.map((c) => (
+                                <option key={c.id} value={c.id}>
+                                    {c.name}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
                 </div>
             )}
 
