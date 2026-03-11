@@ -3,14 +3,15 @@ interface ShareButtonsProps {
     url?: string;
 }
 
-export default function ShareButtons({ text, url = window.location.href }: ShareButtonsProps) {
+export default function ShareButtons({ text, url }: ShareButtonsProps) {
+    const shareUrl = url ?? (typeof window !== 'undefined' ? window.location.href : '');
     const encodedText = encodeURIComponent(text);
-    const encodedUrl = encodeURIComponent(url);
+    const encodedUrl = encodeURIComponent(shareUrl);
 
     const handleWebShare = async () => {
-        if (navigator.share) {
+        if (typeof navigator !== 'undefined' && typeof navigator.share === 'function') {
             try {
-                await navigator.share({ title: 'ダーツの旅', text, url });
+                await navigator.share({ title: 'ダーツの旅', text, url: shareUrl });
             } catch {
                 // User cancelled
             }
@@ -59,7 +60,7 @@ export default function ShareButtons({ text, url = window.location.href }: Share
             </a>
 
             {/* Web Share API */}
-            {typeof navigator !== 'undefined' && navigator.share && (
+            {typeof navigator !== 'undefined' && typeof navigator.share === 'function' && (
                 <button
                     onClick={handleWebShare}
                     className="sns-btn sns-btn-share"
