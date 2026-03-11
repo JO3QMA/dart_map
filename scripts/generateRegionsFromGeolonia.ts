@@ -252,6 +252,14 @@ async function buildRegionsFromApi(): Promise<{ prefectures: Region[]; cities: R
 
 // --- 出力ユーティリティ ---
 
+const PUBLIC_DATA_DIR = path.resolve(process.cwd(), 'public', 'data');
+const OUTPUT_FILES = [
+  path.join(PUBLIC_DATA_DIR, 'prefectures.json'),
+  path.join(PUBLIC_DATA_DIR, 'cities.json'),
+  path.join(PUBLIC_DATA_DIR, 'towns.json'),
+  path.join(PUBLIC_DATA_DIR, 'designated_cities.json'),
+];
+
 function ensureDirExists(dirPath: string): void {
   if (!fs.existsSync(dirPath)) {
     fs.mkdirSync(dirPath, { recursive: true });
@@ -266,17 +274,26 @@ function writeJson(filePath: string, data: unknown): void {
 // --- エントリーポイント ---
 
 async function main() {
+  const force = process.env.FORCE_REGENERATE_REGIONS === '1';
+
+  // すでに全ての生成物が存在し、かつ強制再生成フラグが無い場合はスキップ
+  if (!force && OUTPUT_FILES.every((file) => fs.existsSync(file))) {
+    console.log(
+      'Region JSON files already exist. Skipping generation. (set FORCE_REGENERATE_REGIONS=1 to force)',
+    );
+    return;
+  }
+
   const { prefectures, cities, towns } = await buildRegionsFromApi();
 
   console.log(`Built ${prefectures.length} prefectures, ${cities.length} cities, ${towns.length} towns.`);
 
-  const publicDataDir = path.resolve(process.cwd(), 'public', 'data');
-  writeJson(path.join(publicDataDir, 'prefectures.json'), prefectures);
-  writeJson(path.join(publicDataDir, 'cities.json'), cities);
-  writeJson(path.join(publicDataDir, 'towns.json'), towns);
+  writeJson(path.join(PUBLIC_DATA_DIR, 'prefectures.json'), prefectures);
+  writeJson(path.join(PUBLIC_DATA_DIR, 'cities.json'), cities);
+  writeJson(path.join(PUBLIC_DATA_DIR, 'towns.json'), towns);
 
   const designatedCities = buildDesignatedCities(cities);
-  writeJson(path.join(publicDataDir, 'designated_cities.json'), designatedCities);
+  writeJson(path.join(PUBLIC_DATA_DIR, 'designated_cities.json'), designatedCities);
 
   console.log(
     'Written prefectures.json, cities.json, towns.json and designated_cities.json under public/data.',
