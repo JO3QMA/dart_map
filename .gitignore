@@ -16,3 +16,7 @@ pnpm-debug.log*
 .env
 .env.*
 
+public/data/cities.json
+public/data/designated_cities.json
+public/data/prefectures.json
+public/data/towns.json
