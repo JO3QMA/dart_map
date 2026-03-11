@@ -1,6 +1,8 @@
 import type { Region, RegionLevel, GameMode } from '../types';
+import { getTownSlugFromPrefCode } from '../constants/prefTownFiles';
 
 const cache: Record<string, Region[]> = {};
+const townCache: Record<string, Region[]> = {};
 
 export const DESIGNATED_CITY_NAMES: string[] = [
     '札幌市',
@@ -28,14 +30,17 @@ export const DESIGNATED_CITY_NAMES: string[] = [
 let designatedCitiesCache: Region[] | null = null;
 
 async function loadData(level: RegionLevel): Promise<Region[]> {
-    const fileMap: Record<RegionLevel, string> = {
+    const fileMap: Record<Exclude<RegionLevel, 'town'>, string> = {
         country: '',
         prefecture: '/data/prefectures.json',
         city: '/data/cities.json',
-        town: '/data/towns.json',
     };
 
-    const path = fileMap[level];
+    if (level === 'town') {
+        throw new Error('Use town-specific loaders instead of loadData(\"town\")');
+    }
+
+    const path = fileMap[level as Exclude<RegionLevel, 'town'>];
     if (!path) return [];
 
     if (cache[level]) {
@@ -59,10 +64,35 @@ async function loadDesignatedCities(): Promise<Region[]> {
     return data;
 }
 
+async function loadTownsByPrefCode(prefCode: string): Promise<Region[]> {
+    const slug = getTownSlugFromPrefCode(prefCode);
+    if (!slug) {
+        throw new Error(`Unknown prefecture code: ${prefCode}`);
+    }
+
+    if (townCache[slug]) {
+        return townCache[slug];
+    }
+
+    const response = await fetch(`/data/towns/${slug}.json`);
+    const data: Region[] = await response.json();
+    townCache[slug] = data;
+    return data;
+}
+
 export async function fetchRegions(
     level: RegionLevel,
     parentId?: string
 ): Promise<Region[]> {
+    if (level === 'town') {
+        if (!parentId) {
+            throw new Error('parentId is required when fetching town level regions');
+        }
+        const prefCode = parentId.slice(0, 2);
+        const towns = await loadTownsByPrefCode(prefCode);
+        return towns.filter((r) => r.parentId === parentId);
+    }
+
     const regions = await loadData(level);
     if (parentId) {
         return regions.filter((r) => r.parentId === parentId);
@@ -154,8 +184,19 @@ export async function fetchRandomTargetFromDesignatedCity(wardIds: string[]): Pr
         throw new Error('No ward ids found for designated city');
     }
 
-    const towns = await fetchRegions('town');
-    const candidates = towns.filter((t) => t.parentId && wardIds.includes(t.parentId));
+    const prefCodes = Array.from(
+        new Set(wardIds.map((id) => id.slice(0, 2))),
+    );
+
+    const candidates: Region[] = [];
+    for (const prefCode of prefCodes) {
+        const towns = await loadTownsByPrefCode(prefCode);
+        for (const town of towns) {
+            if (town.parentId && wardIds.includes(town.parentId)) {
+                candidates.push(town);
+            }
+        }
+    }
 
     if (!candidates.length) {
         throw new Error('No towns found for designated city wards');

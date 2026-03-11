@@ -4,6 +4,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import https from 'https';
 import type { Region } from '../src/types';
+import { PREF_CODE_TO_TOWN_SLUG } from '../src/constants/prefTownFiles';
 
 type RegionType = Region['type'];
 
@@ -253,11 +254,16 @@ async function buildRegionsFromApi(): Promise<{ prefectures: Region[]; cities: R
 // --- 出力ユーティリティ ---
 
 const PUBLIC_DATA_DIR = path.resolve(process.cwd(), 'public', 'data');
+const TOWNS_DIR = path.join(PUBLIC_DATA_DIR, 'towns');
 const OUTPUT_FILES = [
   path.join(PUBLIC_DATA_DIR, 'prefectures.json'),
   path.join(PUBLIC_DATA_DIR, 'cities.json'),
-  path.join(PUBLIC_DATA_DIR, 'towns.json'),
   path.join(PUBLIC_DATA_DIR, 'designated_cities.json'),
+  // towns は都道府県ごとに分割されるため、ここでは代表としていくつかのファイルのみ存在チェックに使う。
+  // FORCE_REGENERATE_REGIONS=1 を指定した場合は常に再生成される。
+  ...Object.values(PREF_CODE_TO_TOWN_SLUG).map((slug) =>
+    path.join(TOWNS_DIR, `${slug}.json`),
+  ),
 ];
 
 function ensureDirExists(dirPath: string): void {
@@ -266,9 +272,10 @@ function ensureDirExists(dirPath: string): void {
   }
 }
 
-function writeJson(filePath: string, data: unknown): void {
+function writeJson(filePath: string, data: unknown, pretty: boolean = true): void {
   ensureDirExists(path.dirname(filePath));
-  fs.writeFileSync(filePath, JSON.stringify(data, null, 4), 'utf8');
+  const json = pretty ? JSON.stringify(data, null, 4) : JSON.stringify(data);
+  fs.writeFileSync(filePath, json, 'utf8');
 }
 
 // --- エントリーポイント ---
@@ -288,15 +295,39 @@ async function main() {
 
   console.log(`Built ${prefectures.length} prefectures, ${cities.length} cities, ${towns.length} towns.`);
 
-  writeJson(path.join(PUBLIC_DATA_DIR, 'prefectures.json'), prefectures);
-  writeJson(path.join(PUBLIC_DATA_DIR, 'cities.json'), cities);
-  writeJson(path.join(PUBLIC_DATA_DIR, 'towns.json'), towns);
+  // 都道府県ごとに towns を分割
+  const townsByPrefCode: Record<string, Region[]> = {};
+  for (const town of towns) {
+    const parentId = town.parentId;
+    if (!parentId) continue;
+    const prefCode = parentId.slice(0, 2);
+    if (!PREF_CODE_TO_TOWN_SLUG[prefCode]) {
+      console.warn(`Unknown prefCode for town id=${town.id}, parentId=${parentId}`);
+      continue;
+    }
+    if (!townsByPrefCode[prefCode]) {
+      townsByPrefCode[prefCode] = [];
+    }
+    townsByPrefCode[prefCode].push(town);
+  }
+
+  writeJson(path.join(PUBLIC_DATA_DIR, 'prefectures.json'), prefectures, true);
+  writeJson(path.join(PUBLIC_DATA_DIR, 'cities.json'), cities, true);
+
+  ensureDirExists(TOWNS_DIR);
+  for (const [prefCode, slug] of Object.entries(PREF_CODE_TO_TOWN_SLUG)) {
+    const list = townsByPrefCode[prefCode] ?? [];
+    const filePath = path.join(TOWNS_DIR, `${slug}.json`);
+    // towns はレコード数が非常に多いため、Cloudflare Workers の 25MiB 制限に収まるよう
+    // インデント無しで出力してファイルサイズを抑える。
+    writeJson(filePath, list, false);
+  }
 
   const designatedCities = buildDesignatedCities(cities);
-  writeJson(path.join(PUBLIC_DATA_DIR, 'designated_cities.json'), designatedCities);
+  writeJson(path.join(PUBLIC_DATA_DIR, 'designated_cities.json'), designatedCities, true);
 
   console.log(
-    'Written prefectures.json, cities.json, towns.json and designated_cities.json under public/data.',
+    'Written prefectures.json, cities.json, towns/*.json and designated_cities.json under public/data.',
   );
 }
 
