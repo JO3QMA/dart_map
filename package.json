@@ -7,7 +7,7 @@
     "dev": "vite",
     "build": "npm run generate:regions && tsc -b && vite build",
     "preview": "vite preview",
-    "generate:regions": "ts-node --compiler-options '{\"module\":\"CommonJS\"}' scripts/generateRegionsFromGeolonia.ts"
+    "generate:regions": "tsx scripts/generateRegionsFromGeolonia.ts"
   },
   "dependencies": {
     "lucide-react": "^0.460.0",
@@ -22,6 +22,7 @@
     "@types/node": "^22.10.1",
     "tailwindcss": "^4.0.0",
     "ts-node": "^10.9.2",
+    "tsx": "^4.19.2",
     "typescript": "~5.6.2",
     "vite": "^6.0.0"
   }
