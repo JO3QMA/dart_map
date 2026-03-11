@@ -16,6 +16,11 @@ interface CityPoint {
   lng: number;
 }
 
+interface TownPoint {
+  lat: number;
+  lng: number;
+}
+
 // --- HTTP JSON フェッチ ---
 
 function fetchJson<T>(url: string): Promise<T> {
@@ -43,9 +48,12 @@ function fetchJson<T>(url: string): Promise<T> {
   });
 }
 
-// --- 町丁目 JSON から市区町村代表点を計算 ---
+// --- 町丁目 JSON から市区町村代表点と町データを計算 ---
 
-async function fetchCityPoint(prefName: string, cityName: string): Promise<CityPoint | null> {
+async function fetchCityData(
+  prefName: string,
+  cityName: string,
+): Promise<{ cityPoint: CityPoint | null; townPoints: Map<string, TownPoint> }> {
   const url = `https://geolonia.github.io/japanese-addresses/api/ja/${encodeURIComponent(
     prefName,
   )}/${encodeURIComponent(cityName)}.json`;
@@ -61,35 +69,55 @@ async function fetchCityPoint(prefName: string, cityName: string): Promise<CityP
       }[]
     >(url);
 
-    if (!rows.length) return null;
+    if (!rows.length) {
+      return { cityPoint: null, townPoints: new Map() };
+    }
 
-    let latSum = 0;
-    let lngSum = 0;
-    let count = 0;
+    let cityLatSum = 0;
+    let cityLngSum = 0;
+    let cityCount = 0;
+
+    const townPoints = new Map<string, TownPoint>();
 
     for (const r of rows) {
-      if (typeof r.lat === 'number' && typeof r.lng === 'number') {
-        latSum += r.lat;
-        lngSum += r.lng;
-        count += 1;
+      if (typeof r.lat !== 'number' || typeof r.lng !== 'number') continue;
+
+      cityLatSum += r.lat;
+      cityLngSum += r.lng;
+      cityCount += 1;
+
+      const townName = (r.town ?? '').trim();
+      const koazaName = (r.koaza ?? '').trim();
+      const key = koazaName ? `${townName} ${koazaName}` : townName;
+      if (!key) continue;
+
+      const existing = townPoints.get(key);
+      if (existing) {
+        existing.lat = (existing.lat + r.lat) / 2;
+        existing.lng = (existing.lng + r.lng) / 2;
+      } else {
+        townPoints.set(key, { lat: r.lat, lng: r.lng });
       }
     }
 
-    if (!count) return null;
+    const cityPoint =
+      cityCount > 0
+        ? {
+            lat: cityLatSum / cityCount,
+            lng: cityLngSum / cityCount,
+          }
+        : null;
 
-    return {
-      lat: latSum / count,
-      lng: lngSum / count,
-    };
+    return { cityPoint, townPoints };
   } catch (e) {
     console.error(`Failed to fetch city data for ${prefName} / ${cityName}:`, e);
-    return null;
+    return { cityPoint: null, townPoints: new Map() };
   }
 }
 
 // --- 都道府県・市区町村 Region を生成 ---
 
-async function buildRegionsFromApi(): Promise<{ prefectures: Region[]; cities: Region[] }> {
+async function buildRegionsFromApi(): Promise<{ prefectures: Region[]; cities: Region[]; towns: Region[] }> {
   console.log('Fetching ja.json ...');
   const ja = await fetchJson<JaJson>(JA_JSON_URL);
 
@@ -98,6 +126,7 @@ async function buildRegionsFromApi(): Promise<{ prefectures: Region[]; cities: R
 
   const prefectures: Region[] = [];
   const cities: Region[] = [];
+  const towns: Region[] = [];
 
   for (let i = 0; i < prefectureNames.length; i++) {
     const prefName = prefectureNames[i];
@@ -114,8 +143,8 @@ async function buildRegionsFromApi(): Promise<{ prefectures: Region[]; cities: R
       const cityName = cityNames[j];
       const cityId = prefId + String(j + 1).padStart(3, '0'); // 例: "13001"
 
-      const point = await fetchCityPoint(prefName, cityName);
-      if (!point) {
+      const { cityPoint, townPoints } = await fetchCityData(prefName, cityName);
+      if (!cityPoint) {
         console.warn(`  [skip] no point for city: ${prefName} / ${cityName}`);
         continue;
       }
@@ -124,11 +153,25 @@ async function buildRegionsFromApi(): Promise<{ prefectures: Region[]; cities: R
         id: cityId,
         type: 'city' as RegionType,
         name: cityName,
-        coordinate: point,
+        coordinate: cityPoint,
         parentId: prefId,
       });
 
-      cityPoints.push(point);
+      cityPoints.push(cityPoint);
+
+      let townIndex = 0;
+      for (const [name, point] of townPoints.entries()) {
+        townIndex += 1;
+        const townId = `${cityId}-${String(townIndex).padStart(4, '0')}`;
+
+        towns.push({
+          id: townId,
+          type: 'town',
+          name,
+          coordinate: point,
+          parentId: cityId,
+        });
+      }
     }
 
     // 都道府県代表点 = その都道府県に属する市区町村代表点の平均
@@ -154,8 +197,9 @@ async function buildRegionsFromApi(): Promise<{ prefectures: Region[]; cities: R
 
   prefectures.sort((a, b) => a.id.localeCompare(b.id));
   cities.sort((a, b) => a.id.localeCompare(b.id));
+  towns.sort((a, b) => a.id.localeCompare(b.id));
 
-  return { prefectures, cities };
+  return { prefectures, cities, towns };
 }
 
 // --- 出力ユーティリティ ---
@@ -174,15 +218,16 @@ function writeJson(filePath: string, data: unknown): void {
 // --- エントリーポイント ---
 
 async function main() {
-  const { prefectures, cities } = await buildRegionsFromApi();
+  const { prefectures, cities, towns } = await buildRegionsFromApi();
 
-  console.log(`Built ${prefectures.length} prefectures and ${cities.length} cities.`);
+  console.log(`Built ${prefectures.length} prefectures, ${cities.length} cities, ${towns.length} towns.`);
 
   const publicDataDir = path.resolve(process.cwd(), 'public', 'data');
   writeJson(path.join(publicDataDir, 'prefectures.json'), prefectures);
   writeJson(path.join(publicDataDir, 'cities.json'), cities);
+  writeJson(path.join(publicDataDir, 'towns.json'), towns);
 
-  console.log('Written prefectures.json and cities.json under public/data.');
+  console.log('Written prefectures.json, cities.json and towns.json under public/data.');
 }
 
 main().catch((err) => {
