@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
+    "build": "npm run generate:regions && tsc -b && vite build",
     "preview": "vite preview",
     "generate:regions": "ts-node --compiler-options '{\"module\":\"CommonJS\"}' scripts/generateRegionsFromGeolonia.ts"
   },
