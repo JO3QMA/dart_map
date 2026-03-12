@@ -306,6 +306,18 @@ function MapController({
         []
     );
 
+    // GeoJSON 内の Point をデフォルトマーカーではなく不可視のサークルとして描画し、
+    // 青いデフォルトマーカーが重複表示されるのを防ぐ
+    const pointToLayer = useCallback(
+        (_feature: GeoJSON.Feature, latlng: L.LatLng) =>
+            L.circleMarker(latlng, {
+                radius: 0,
+                opacity: 0,
+                fillOpacity: 0,
+            }),
+        []
+    );
+
 
     if (loading || error) {
         return null;
@@ -321,6 +333,7 @@ function MapController({
                     key={JSON.stringify(data)}
                     data={data as never}
                     style={style}
+                    pointToLayer={pointToLayer as never}
                     eventHandlers={{
                         add(e: LayerEvent) {
                             const layer = e.target as L.GeoJSON;
@@ -341,6 +354,7 @@ function MapController({
                     key={JSON.stringify(cityBoundary)}
                     data={cityBoundary as never}
                     style={cityStyle}
+                    pointToLayer={pointToLayer as never}
                 />
             )}
         </>
