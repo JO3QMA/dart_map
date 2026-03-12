@@ -42,6 +42,16 @@ export default function InteractiveMap({
     result,
     parentName,
 }: InteractiveMapProps) {
+    const dartIcon = useMemo(
+        () =>
+            L.divIcon({
+                html: '<span style="font-size: 24px;">🎯</span>',
+                className: 'leaflet-div-icon dart-marker',
+                iconSize: [32, 32],
+                iconAnchor: [16, 16],
+            }),
+        []
+    );
     const query = useMemo(() => {
         if (result) {
             return `${parentName || ''} ${result.name}`.trim();
@@ -85,6 +95,13 @@ export default function InteractiveMap({
                         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                         attribution="&copy; OpenStreetMap contributors"
                     />
+                    {result && (
+                        <Marker
+                            position={[result.coordinate.lat, result.coordinate.lng]}
+                            icon={dartIcon}
+                            zIndexOffset={1000}
+                        />
+                    )}
                     <MapController
                         query={query}
                         hasResult={!!result}
@@ -94,22 +111,6 @@ export default function InteractiveMap({
                         result={result}
                     />
                 </MapContainer>
-
-                {!isAnimating && !disabled && (
-                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                        <div className="animate-pulse-glow rounded-full w-16 h-16 flex items-center justify-center">
-                            <div className="text-3xl animate-bounce-subtle">🎯</div>
-                        </div>
-                    </div>
-                )}
-
-                {!isAnimating && !disabled && (
-                    <div className="absolute bottom-4 left-0 right-0 text-center pointer-events-none">
-                        <span className="inline-block bg-white/80 backdrop-blur-sm rounded-full px-4 py-1.5 text-xs font-semibold text-gray-600 shadow-sm">
-                            クリックしてダーツを投げる！
-                        </span>
-                    </div>
-                )}
 
                 {disabled && (
                     <div className="absolute inset-0 flex items-center justify-center bg-gray-900/10 rounded-2xl">
@@ -135,17 +136,6 @@ function MapController({
     const [data, setData] = useState<BoundaryGeoJSON | null>(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
-
-    const dartIcon = useMemo(
-        () =>
-            L.divIcon({
-                html: '🎯',
-                className: '',
-                iconSize: [32, 32],
-                iconAnchor: [16, 16],
-            }),
-        []
-    );
 
     useMapEvents({
         click(e) {
@@ -245,12 +235,6 @@ function MapController({
                             }
                         },
                     }}
-                />
-            )}
-            {result && (
-                <Marker
-                    position={[result.coordinate.lat, result.coordinate.lng]}
-                    icon={dartIcon}
                 />
             )}
         </>
