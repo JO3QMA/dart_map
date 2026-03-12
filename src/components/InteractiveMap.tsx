@@ -1,11 +1,13 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
     GeoJSON as LeafletGeoJSON,
     MapContainer,
+    Marker,
     TileLayer,
     useMap,
     useMapEvents,
 } from 'react-leaflet';
+import L from 'leaflet';
 import type { GameMode, Region, DartPosition } from '../types';
 
 export interface InteractiveMapProps {
@@ -25,6 +27,7 @@ interface MapControllerProps {
     isAnimating: boolean;
     disabled: boolean;
     onMapClick: (xPercent: number, yPercent: number) => void;
+    result: Region | null;
 }
 
 type BoundaryGeoJSON = GeoJSON.FeatureCollection;
@@ -39,11 +42,6 @@ export default function InteractiveMap({
     result,
     parentName,
 }: InteractiveMapProps) {
-    const [showDart, setShowDart] = useState(false);
-    const [dartPos, setDartPos] = useState<DartPosition>({ x: 50, y: 100 });
-    const [landed, setLanded] = useState(false);
-    const [impactPos, setImpactPos] = useState<DartPosition | null>(null);
-
     const query = useMemo(() => {
         if (result) {
             return `${parentName || ''} ${result.name}`.trim();
@@ -58,35 +56,10 @@ export default function InteractiveMap({
     }, [result, parentName, mode, prefectureName, cityName]);
 
     const handleMapClick = useCallback(
-        (x: number, y: number) => {
+        (xPercent: number, yPercent: number) => {
             if (isAnimating || disabled) return;
 
-            const xPercent = (x / 1) * 100;
-            const yPercent = (y / 1) * 100;
-
-            setLanded(false);
-            setImpactPos(null);
-            setShowDart(true);
-            setDartPos({ x: 50, y: 105 });
-
-            requestAnimationFrame(() => {
-                requestAnimationFrame(() => {
-                    setDartPos({ x: xPercent, y: yPercent });
-                });
-            });
-
-            setTimeout(() => {
-                setLanded(true);
-                setImpactPos({ x: xPercent, y: yPercent });
-            }, 700);
-
             onThrow(xPercent, yPercent);
-
-            setTimeout(() => {
-                setShowDart(false);
-                setLanded(false);
-                setImpactPos(null);
-            }, 2000);
         },
         [disabled, isAnimating, onThrow]
     );
@@ -118,10 +91,11 @@ export default function InteractiveMap({
                         isAnimating={isAnimating}
                         disabled={disabled}
                         onMapClick={handleMapClick}
+                        result={result}
                     />
                 </MapContainer>
 
-                {!showDart && !isAnimating && !disabled && (
+                {!isAnimating && !disabled && (
                     <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                         <div className="animate-pulse-glow rounded-full w-16 h-16 flex items-center justify-center">
                             <div className="text-3xl animate-bounce-subtle">🎯</div>
@@ -129,35 +103,12 @@ export default function InteractiveMap({
                     </div>
                 )}
 
-                {!showDart && !isAnimating && !disabled && (
+                {!isAnimating && !disabled && (
                     <div className="absolute bottom-4 left-0 right-0 text-center pointer-events-none">
                         <span className="inline-block bg-white/80 backdrop-blur-sm rounded-full px-4 py-1.5 text-xs font-semibold text-gray-600 shadow-sm">
                             クリックしてダーツを投げる！
                         </span>
                     </div>
-                )}
-
-                {showDart && (
-                    <div
-                        className={`dart ${landed ? 'animate-dart-stick' : ''}`}
-                        style={{
-                            left: `${dartPos.x}%`,
-                            top: `${dartPos.y}%`,
-                            transform: 'translate(-50%, -50%)',
-                        }}
-                    >
-                        🎯
-                    </div>
-                )}
-
-                {impactPos && (
-                    <div
-                        className="dart-impact"
-                        style={{
-                            left: `${impactPos.x}%`,
-                            top: `${impactPos.y}%`,
-                        }}
-                    />
                 )}
 
                 {disabled && (
@@ -172,11 +123,29 @@ export default function InteractiveMap({
     );
 }
 
-function MapController({ query, hasResult, isAnimating, disabled, onMapClick }: MapControllerProps) {
+function MapController({
+    query,
+    hasResult,
+    isAnimating,
+    disabled,
+    onMapClick,
+    result,
+}: MapControllerProps) {
     const map = useMap();
     const [data, setData] = useState<BoundaryGeoJSON | null>(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+
+    const dartIcon = useMemo(
+        () =>
+            L.divIcon({
+                html: '🎯',
+                className: '',
+                iconSize: [32, 32],
+                iconAnchor: [16, 16],
+            }),
+        []
+    );
 
     useMapEvents({
         click(e) {
@@ -188,7 +157,7 @@ function MapController({ query, hasResult, isAnimating, disabled, onMapClick }: 
         },
     });
 
-    useMemo(() => {
+    useEffect(() => {
         let cancelled = false;
 
         const fetchBoundary = async () => {
@@ -232,6 +201,15 @@ function MapController({ query, hasResult, isAnimating, disabled, onMapClick }: 
         };
     }, [query]);
 
+    // 抽選結果が確定したら、その地点へマップを移動
+    useEffect(() => {
+        if (!result) return;
+        const { lat, lng } = result.coordinate;
+        const currentZoom = map.getZoom();
+        const targetZoom = Math.max(currentZoom, 9);
+        map.flyTo([lat, lng], targetZoom, { duration: 1.2 });
+    }, [map, result]);
+
     const style = useCallback(
         () => ({
             color: hasResult ? '#ef4444' : '#3b82f6',
@@ -243,32 +221,38 @@ function MapController({ query, hasResult, isAnimating, disabled, onMapClick }: 
         [hasResult]
     );
 
-    if (data) {
-        return (
-            <LeafletGeoJSON
-                key={query}
-                data={data as never}
-                style={style}
-                eventHandlers={{
-                    add(e) {
-                        const layer = e.target;
-                        try {
-                            const bounds = layer.getBounds();
-                            if (bounds && bounds.isValid && bounds.isValid()) {
-                                map.flyToBounds(bounds, { padding: [20, 20] });
-                            }
-                        } catch {
-                            // ignore
-                        }
-                    },
-                }}
-            />
-        );
-    }
-
     if (loading || error) {
         return null;
     }
 
-    return null;
+    return (
+        <>
+            {data && (
+                <LeafletGeoJSON
+                    key={JSON.stringify(data)}
+                    data={data as never}
+                    style={style}
+                    eventHandlers={{
+                        add(e) {
+                            const layer = e.target;
+                            try {
+                                const bounds = layer.getBounds();
+                                if (bounds && bounds.isValid && bounds.isValid()) {
+                                    map.flyToBounds(bounds, { padding: [20, 20] });
+                                }
+                            } catch {
+                                // ignore
+                            }
+                        },
+                    }}
+                />
+            )}
+            {result && (
+                <Marker
+                    position={[result.coordinate.lat, result.coordinate.lng]}
+                    icon={dartIcon}
+                />
+            )}
+        </>
+    );
 }
