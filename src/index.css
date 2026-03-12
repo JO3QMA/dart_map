@@ -18,6 +18,7 @@
   --shadow-soft: 0 18px 40px -24px rgba(15, 23, 42, 0.28);
   --font-display: 'Outfit', 'Noto Sans JP', sans-serif;
   --font-body: 'Noto Sans JP', 'Outfit', sans-serif;
+  --footer-height: 32px;
 }
 
 * {
@@ -334,12 +335,13 @@ body {
    Map Area / Fullscreen map layer
    ========================================= */
 
+/* 地図はフッターの高さ分だけ上で止め、Leaflet の attribution が隠れないようにする */
 .map-layer {
   position: absolute;
   top: 0;
   left: 0;
-  width: 100%;
-  height: 100%;
+  right: 0;
+  bottom: var(--footer-height);
   z-index: 1;
 }
 
@@ -536,6 +538,7 @@ body {
   left: 0;
   width: 100%;
   z-index: 1000;
+  min-height: var(--footer-height);
   background-color: rgba(255, 255, 255, 0.8);
   backdrop-filter: blur(4px);
   padding: 4px 16px;
