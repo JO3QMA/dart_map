@@ -92,7 +92,7 @@ export default function RegionSelector({
     };
 
     return (
-        <div className="glass-card p-4 sm:p-6">
+        <div className="glass-card glass-card-floating p-3 sm:p-4">
             {/* Mode buttons */}
             <div className="mb-5">
                 <p className="mb-3 text-sm font-semibold text-gray-600">

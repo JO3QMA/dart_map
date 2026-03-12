@@ -181,44 +181,51 @@ export default function App() {
     }, []);
 
     return (
-        <div className="min-h-screen flex flex-col">
+        <div className="app-root">
+            {/* 地図レイヤー（全画面・最下層） */}
+            <div className="map-layer">
+                <InteractiveMap
+                    isAnimating={isAnimating}
+                    onThrow={handleThrow}
+                    disabled={isMapDisabled}
+                    mode={mode}
+                    prefectureName={prefectureName}
+                    cityName={cityName}
+                    result={result}
+                    parentName={parentName}
+                />
+            </div>
+
             <Header />
 
-            <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col px-4 py-6 sm:px-6 sm:py-8">
-                <div className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-6 min-h-0">
-                    <RegionSelector
-                        mode={mode}
-                        onModeChange={setMode}
-                        selectedPrefecture={selectedPrefecture}
-                        onPrefectureChange={setSelectedPrefecture}
-                        selectedCity={selectedCity}
-                        onCityChange={setSelectedCity}
-                        mergeDesignatedCities={mergeDesignatedCities}
-                        onMergeDesignatedCitiesChange={setMergeDesignatedCities}
-                    />
+            {/* 操作パネル（地図上にオーバーレイ） */}
+            <div className="floating-panel">
+                <RegionSelector
+                    mode={mode}
+                    onModeChange={setMode}
+                    selectedPrefecture={selectedPrefecture}
+                    onPrefectureChange={setSelectedPrefecture}
+                    selectedCity={selectedCity}
+                    onCityChange={setSelectedCity}
+                    mergeDesignatedCities={mergeDesignatedCities}
+                    onMergeDesignatedCitiesChange={setMergeDesignatedCities}
+                />
+            </div>
 
-                    {/* 余白を保ちつつ、地図エリアが残り高さを使えるようにする */}
-                    <div className="flex-1 min-h-[320px]">
-                        <InteractiveMap
-                            isAnimating={isAnimating}
-                            onThrow={handleThrow}
-                            disabled={isMapDisabled}
-                            mode={mode}
-                            prefectureName={prefectureName}
-                            cityName={cityName}
-                            result={result}
-                            parentName={parentName}
-                        />
-                    </div>
-
-                    {/* Footer attribution */}
-                    <footer className="pt-4 text-center">
-                        <p className="text-xs text-gray-400">
-                            © 2026 ダーツの旅 — バーチャル旅行アプリ
-                        </p>
-                    </footer>
-                </div>
-            </main>
+            {/* フッター（ライセンス・コピーライト） */}
+            <footer className="app-footer">
+                <p className="text-center">
+                    © 2026 ダーツの旅 — バーチャル旅行アプリ
+                    {' · '}
+                    <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">
+                        © OpenStreetMap
+                    </a>
+                    {' · '}
+                    <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener noreferrer">
+                        Geolonia 住所データ（CC BY 4.0）
+                    </a>
+                </p>
+            </footer>
 
             {/* Result Modal */}
             {showModal && result && (

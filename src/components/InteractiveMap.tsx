@@ -137,7 +137,7 @@ export default function InteractiveMap({
     );
 
     return (
-        <div className="relative h-full">
+        <div className="relative h-full w-full">
             <div
                 id="map-area"
                 className="map-area"
