@@ -11,6 +11,13 @@ import L, { type LeafletMouseEvent, type LayerEvent } from 'leaflet';
 import type { FeatureCollection } from 'geojson';
 import type { GameMode, Region } from '../types';
 
+// Leaflet のデフォルトマーカー画像参照先を CDN に変更し、ローカルの /marker-*.png へのフォールバックを防ぐ
+L.Icon.Default.mergeOptions({
+    iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
+    iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
+    shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+});
+
 export interface InteractiveMapProps {
     isAnimating: boolean;
     onThrow: (clickX: number, clickY: number) => void;
