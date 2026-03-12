@@ -317,6 +317,22 @@ body {
   animation: fadeIn 0.2s ease-out;
 }
 
+/* =========================================
+   Leaflet z-index調整（モーダルより下に配置）
+   ========================================= */
+
+.map-area .leaflet-container {
+  position: absolute;
+  inset: 0;
+  z-index: 0 !important;
+}
+
+.map-area .leaflet-pane,
+.map-area .leaflet-top,
+.map-area .leaflet-bottom {
+  z-index: 10 !important;
+}
+
 .modal-content {
   background: white;
   border-radius: 1.5rem;
