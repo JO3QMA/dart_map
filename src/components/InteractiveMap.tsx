@@ -7,7 +7,8 @@ import {
     useMap,
     useMapEvents,
 } from 'react-leaflet';
-import L from 'leaflet';
+import L, { type LeafletMouseEvent, type LayerEvent } from 'leaflet';
+import type { FeatureCollection } from 'geojson';
 import type { GameMode, Region } from '../types';
 
 export interface InteractiveMapProps {
@@ -32,7 +33,7 @@ interface MapControllerProps {
     prefectureName: string;
 }
 
-type BoundaryGeoJSON = GeoJSON.FeatureCollection;
+type BoundaryGeoJSON = FeatureCollection;
 
 export default function InteractiveMap({
     isAnimating,
@@ -154,7 +155,7 @@ function MapController({
     const [error, setError] = useState<string | null>(null);
 
     useMapEvents({
-        click(e) {
+        click(e: LeafletMouseEvent) {
             if (isAnimating || disabled) return;
             const size = map.getSize();
             const xPercent = (e.containerPoint.x / size.x) * 100;
@@ -314,8 +315,8 @@ function MapController({
                     data={data as never}
                     style={style}
                     eventHandlers={{
-                        add(e) {
-                            const layer = e.target;
+                        add(e: LayerEvent) {
+                            const layer = e.target as L.GeoJSON;
                             try {
                                 const bounds = layer.getBounds();
                                 if (bounds && bounds.isValid && bounds.isValid()) {
