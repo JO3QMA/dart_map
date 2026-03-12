@@ -141,7 +141,8 @@ export default function RegionSelector({
             {/* Designated city toggle & city selector */}
             {selectedPrefecture && (mode === 'prefecture' || mode === 'city') && (
                 <div className="animate-fade-in mt-4 flex flex-col gap-3">
-                    <label className="flex cursor-pointer select-none items-center gap-2 rounded-full bg-slate-100 px-3 py-2 text-sm text-gray-600">
+                    {/* 背景帯を外し、カードになじむ軽やかなトグル行に調整 */}
+                    <label className="flex cursor-pointer select-none items-center gap-2 px-1 py-2 text-sm text-gray-600">
                         <input
                             type="checkbox"
                             checked={mergeDesignatedCities}
@@ -176,7 +177,8 @@ export default function RegionSelector({
 
             {/* Instruction */}
             <div className="mt-5 border-t border-slate-200/70 pt-4">
-                <p className="flex items-center gap-1 text-xs text-gray-400">
+                {/* ガイド文のコントラストを上げて視認性を改善 */}
+                <p className="flex items-center gap-1 text-xs text-gray-600">
                     <span>👆</span>
                     {mode === 'country'
                         ? '下の地図エリアをクリックしてダーツを投げよう！'

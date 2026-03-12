@@ -184,36 +184,39 @@ export default function App() {
         <div className="min-h-screen flex flex-col">
             <Header />
 
-            <main className="mx-auto flex w-full max-w-5xl flex-1 px-4 py-6 sm:px-6 sm:py-8">
-                <div className="mx-auto w-full max-w-3xl space-y-6">
-                <RegionSelector
-                    mode={mode}
-                    onModeChange={setMode}
-                    selectedPrefecture={selectedPrefecture}
-                    onPrefectureChange={setSelectedPrefecture}
-                    selectedCity={selectedCity}
-                    onCityChange={setSelectedCity}
-                    mergeDesignatedCities={mergeDesignatedCities}
-                    onMergeDesignatedCitiesChange={setMergeDesignatedCities}
-                />
+            <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col px-4 py-6 sm:px-6 sm:py-8">
+                <div className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-6 min-h-0">
+                    <RegionSelector
+                        mode={mode}
+                        onModeChange={setMode}
+                        selectedPrefecture={selectedPrefecture}
+                        onPrefectureChange={setSelectedPrefecture}
+                        selectedCity={selectedCity}
+                        onCityChange={setSelectedCity}
+                        mergeDesignatedCities={mergeDesignatedCities}
+                        onMergeDesignatedCitiesChange={setMergeDesignatedCities}
+                    />
 
-                <InteractiveMap
-                    isAnimating={isAnimating}
-                    onThrow={handleThrow}
-                    disabled={isMapDisabled}
-                    mode={mode}
-                    prefectureName={prefectureName}
-                    cityName={cityName}
-                    result={result}
-                    parentName={parentName}
-                />
+                    {/* 余白を保ちつつ、地図エリアが残り高さを使えるようにする */}
+                    <div className="flex-1 min-h-[320px]">
+                        <InteractiveMap
+                            isAnimating={isAnimating}
+                            onThrow={handleThrow}
+                            disabled={isMapDisabled}
+                            mode={mode}
+                            prefectureName={prefectureName}
+                            cityName={cityName}
+                            result={result}
+                            parentName={parentName}
+                        />
+                    </div>
 
-                {/* Footer attribution */}
-                <footer className="text-center pt-4">
-                    <p className="text-xs text-gray-400">
-                        © 2026 ダーツの旅 — バーチャル旅行アプリ
-                    </p>
-                </footer>
+                    {/* Footer attribution */}
+                    <footer className="pt-4 text-center">
+                        <p className="text-xs text-gray-400">
+                            © 2026 ダーツの旅 — バーチャル旅行アプリ
+                        </p>
+                    </footer>
                 </div>
             </main>
 

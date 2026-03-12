@@ -91,12 +91,44 @@ export default function InteractiveMap({
 
             const mapArea = mapAreaRef.current;
             if (mapArea) {
-                const ripple = document.createElement('div');
-                ripple.className = 'dart-impact';
-                ripple.style.left = `${point.x}px`;
-                ripple.style.top = `${point.y}px`;
-                mapArea.appendChild(ripple);
-                window.setTimeout(() => ripple.remove(), 800);
+                // 画面外から着地点へ飛び込むダーツ演出を追加
+                const dart = document.createElement('div');
+                dart.className = 'dart-fly';
+                dart.textContent = '🎯';
+
+                const startX = -36;
+                const startY = mapArea.clientHeight + 36;
+                const angle = (Math.atan2(point.y - startY, point.x - startX) * 180) / Math.PI;
+
+                dart.style.left = `${startX}px`;
+                dart.style.top = `${startY}px`;
+                dart.style.transform = `translate(-50%, -50%) rotate(${angle}deg) scale(0.82)`;
+                mapArea.appendChild(dart);
+
+                requestAnimationFrame(() => {
+                    dart.style.left = `${point.x}px`;
+                    dart.style.top = `${point.y}px`;
+                    dart.style.transform = `translate(-50%, -50%) rotate(${angle}deg) scale(1)`;
+                });
+
+                // 着弾時に複数の波紋を重ねて、命中感を強める
+                window.setTimeout(() => {
+                    dart.remove();
+
+                    [0, 100, 200].forEach((delay, index) => {
+                        window.setTimeout(() => {
+                            if (!mapArea.isConnected) return;
+
+                            const ripple = document.createElement('div');
+                            ripple.className = 'dart-impact';
+                            ripple.style.left = `${point.x}px`;
+                            ripple.style.top = `${point.y}px`;
+                            ripple.style.animationDelay = `${index * 0.06}s`;
+                            mapArea.appendChild(ripple);
+                            window.setTimeout(() => ripple.remove(), 900);
+                        }, delay);
+                    });
+                }, 650);
             }
 
             onThrow(xPercent, yPercent);
@@ -105,7 +137,7 @@ export default function InteractiveMap({
     );
 
     return (
-        <div className="relative">
+        <div className="relative h-full">
             <div
                 id="map-area"
                 className="map-area"
