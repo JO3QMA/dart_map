@@ -1,0 +1,19 @@
+---
+description: Ensure package-lock.json is updated whenever package.json is modified
+globs: package.json
+alwaysApply: false
+---
+
+# package.json と package-lock.json の同期ルール
+
+- `package.json` を変更した場合は、必ず **`npm install` などで `package-lock.json` も更新** すること。
+- 変更後は `git diff` で `package.json` と `package-lock.json` の両方の差分を確認し、**セットでコミット**すること。
+- CI では `npm ci` を使用しているため、両ファイルが同期していないとビルドが失敗する。
+
+## チェックリスト
+
+- [ ] `package.json` を編集した
+- [ ] `npm install` もしくは同等コマンドを実行して `package-lock.json` を更新した
+- [ ] `package-lock.json` にも差分が出ていることを確認した
+- [ ] 両方のファイルを一緒にコミットした
+

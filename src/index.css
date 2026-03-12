@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "leaflet/dist/leaflet.css";
 
 :root {
   --color-primary: #0ea5e9;
@@ -273,6 +274,13 @@ body {
     inset 0 2px 4px rgba(255, 255, 255, 0.3);
 }
 
+/* Leaflet dart marker (🎯) */
+.dart-marker {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+}
+
 /* =========================================
    Dart
    ========================================= */
@@ -314,6 +322,22 @@ body {
   z-index: 100;
   padding: 1rem;
   animation: fadeIn 0.2s ease-out;
+}
+
+/* =========================================
+   Leaflet z-index調整（モーダルより下に配置）
+   ========================================= */
+
+.map-area .leaflet-container {
+  position: absolute;
+  inset: 0;
+  z-index: 0 !important;
+}
+
+.map-area .leaflet-pane,
+.map-area .leaflet-top,
+.map-area .leaflet-bottom {
+  z-index: 10 !important;
 }
 
 .modal-content {
