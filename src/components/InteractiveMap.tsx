@@ -53,15 +53,24 @@ export default function InteractiveMap({
         []
     );
     const query = useMemo(() => {
-        if (result) {
-            return `${parentName || ''} ${result.name}`.trim();
-        }
-        if (mode === 'city') {
-            return `${prefectureName} ${cityName}`.trim();
-        }
+        // 都道府県モードでは、抽選結果があっても常に選択中の都道府県名で境界を取得する
+        // これにより、他の都道府県の境界線が表示されるのを防ぐ
         if (mode === 'prefecture') {
             return prefectureName;
         }
+
+        if (mode === 'city') {
+            if (result) {
+                // 市区町村モードでは、親(都道府県など) + 結果名でより精度の高い境界を取得する
+                return `${parentName || prefectureName} ${result.name}`.trim();
+            }
+            return `${prefectureName} ${cityName}`.trim();
+        }
+
+        if (result) {
+            return `${parentName || ''} ${result.name}`.trim();
+        }
+
         return '日本';
     }, [result, parentName, mode, prefectureName, cityName]);
 
@@ -200,6 +209,14 @@ function MapController({
         map.flyTo([lat, lng], targetZoom, { duration: 1.2 });
     }, [map, result]);
 
+    useEffect(() => {
+        if (!result) return;
+        const { lat, lng } = result.coordinate;
+        const currentZoom = map.getZoom();
+        const targetZoom = Math.max(currentZoom, 9);
+        map.flyTo([lat, lng], targetZoom, { duration: 1.2 });
+    }, [map, result]);
+
     const style = useCallback(
         () => ({
             color: hasResult ? '#ef4444' : '#3b82f6',
@@ -209,6 +226,28 @@ function MapController({
             fillOpacity: hasResult ? 0.1 : 0.05,
         }),
         [hasResult]
+    );
+
+    const featureFilter = useCallback(
+        (feature: GeoJSON.Feature) => {
+            // 抽選前はそのまま全て表示
+            if (!hasResult || !result) return true;
+
+            const bbox =
+                (feature.properties as any)?.boundingbox ||
+                (feature as any).boundingbox;
+
+            if (!bbox || bbox.length < 4) return true;
+
+            const [south, north, west, east] = bbox.map((v: string | number) =>
+                typeof v === 'string' ? parseFloat(v) : v
+            );
+
+            const { lat, lng } = result.coordinate;
+
+            return lat >= south && lat <= north && lng >= west && lng <= east;
+        },
+        [hasResult, result]
     );
 
     if (loading || error) {
@@ -222,13 +261,14 @@ function MapController({
                     key={JSON.stringify(data)}
                     data={data as never}
                     style={style}
+                    filter={featureFilter as never}
                     eventHandlers={{
                         add(e) {
                             const layer = e.target;
                             try {
                                 const bounds = layer.getBounds();
                                 if (bounds && bounds.isValid && bounds.isValid()) {
-                                    map.flyToBounds(bounds, { padding: [20, 20] });
+                                    map.flyToBounds(bounds, { padding: [60, 60] });
                                 }
                             } catch {
                                 // ignore

@@ -274,6 +274,13 @@ body {
     inset 0 2px 4px rgba(255, 255, 255, 0.3);
 }
 
+/* Leaflet dart marker (🎯) */
+.dart-marker {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+}
+
 /* =========================================
    Dart
    ========================================= */

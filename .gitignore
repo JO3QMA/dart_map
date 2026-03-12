@@ -18,3 +18,5 @@ pnpm-debug.log*
 
 public/data/*.json
 public/data/*/*.json
+
+/.wrangler
