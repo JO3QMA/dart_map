@@ -28,6 +28,8 @@ interface MapControllerProps {
     disabled: boolean;
     onMapClick: (xPercent: number, yPercent: number) => void;
     result: Region | null;
+    mode: GameMode;
+    prefectureName: string;
 }
 
 type BoundaryGeoJSON = GeoJSON.FeatureCollection;
@@ -118,6 +120,8 @@ export default function InteractiveMap({
                         disabled={disabled}
                         onMapClick={handleMapClick}
                         result={result}
+                        mode={mode}
+                        prefectureName={prefectureName}
                     />
                 </MapContainer>
 
@@ -140,9 +144,12 @@ function MapController({
     disabled,
     onMapClick,
     result,
+    mode,
+    prefectureName,
 }: MapControllerProps) {
     const map = useMap();
     const [data, setData] = useState<BoundaryGeoJSON | null>(null);
+    const [cityBoundary, setCityBoundary] = useState<BoundaryGeoJSON | null>(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
@@ -206,6 +213,52 @@ function MapController({
         };
     }, [query]);
 
+    // 都道府県モードで市区町村が当選した場合、その市区町村の境界も別レイヤーで取得・表示
+    useEffect(() => {
+        let cancelled = false;
+
+        const fetchCityBoundary = async () => {
+            if (!result || mode !== 'prefecture') {
+                setCityBoundary(null);
+                return;
+            }
+
+            const cityQuery = `${prefectureName} ${result.name}`.trim();
+            if (!cityQuery) {
+                setCityBoundary(null);
+                return;
+            }
+
+            try {
+                const params = new URLSearchParams({ q: cityQuery });
+                const res = await fetch(`/api/boundary?${params.toString()}`);
+
+                if (!res.ok) {
+                    throw new Error(`Failed to fetch city boundary: ${res.status}`);
+                }
+
+                const json = (await res.json()) as BoundaryGeoJSON;
+                if (cancelled) return;
+
+                const filtered: BoundaryGeoJSON =
+                    json.features?.length > 1
+                        ? { ...json, features: [json.features[0]] }
+                        : json;
+
+                setCityBoundary(filtered);
+            } catch (err) {
+                if (cancelled) return;
+                console.error(err);
+            }
+        };
+
+        fetchCityBoundary();
+
+        return () => {
+            cancelled = true;
+        };
+    }, [mode, prefectureName, result]);
+
     // 抽選結果が確定したら、その地点へマップを移動
     useEffect(() => {
         if (!result) return;
@@ -234,14 +287,28 @@ function MapController({
         [hasResult]
     );
 
+    const cityStyle = useCallback(
+        () => ({
+            color: '#22c55e',
+            weight: 3,
+            dashArray: undefined,
+            fillColor: '#22c55e',
+            fillOpacity: 0.08,
+        }),
+        []
+    );
+
 
     if (loading || error) {
         return null;
     }
 
+    const showBaseBoundary =
+        !(mode === 'prefecture' && result && cityBoundary);
+
     return (
         <>
-            {data && (
+            {showBaseBoundary && data && (
                 <LeafletGeoJSON
                     key={JSON.stringify(data)}
                     data={data as never}
@@ -259,6 +326,13 @@ function MapController({
                             }
                         },
                     }}
+                />
+            )}
+            {cityBoundary && (
+                <LeafletGeoJSON
+                    key={JSON.stringify(cityBoundary)}
+                    data={cityBoundary as never}
+                    style={cityStyle}
                 />
             )}
         </>
