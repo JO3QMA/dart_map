@@ -8,7 +8,7 @@ import {
     useMapEvents,
 } from 'react-leaflet';
 import L from 'leaflet';
-import type { GameMode, Region, DartPosition } from '../types';
+import type { GameMode, Region } from '../types';
 
 export interface InteractiveMapProps {
     isAnimating: boolean;
@@ -181,7 +181,13 @@ function MapController({
                 const json = (await res.json()) as BoundaryGeoJSON;
                 if (cancelled) return;
 
-                setData(json);
+                // 先頭フィーチャのみに絞り込み、余分な境界線が描画されるのを防ぐ
+                const filtered: BoundaryGeoJSON =
+                    json.features?.length > 1
+                        ? { ...json, features: [json.features[0]] }
+                        : json;
+
+                setData(filtered);
             } catch (err) {
                 if (cancelled) return;
                 console.error(err);
@@ -228,27 +234,6 @@ function MapController({
         [hasResult]
     );
 
-    const featureFilter = useCallback(
-        (feature: GeoJSON.Feature) => {
-            // 抽選前はそのまま全て表示
-            if (!hasResult || !result) return true;
-
-            const bbox =
-                (feature.properties as any)?.boundingbox ||
-                (feature as any).boundingbox;
-
-            if (!bbox || bbox.length < 4) return true;
-
-            const [south, north, west, east] = bbox.map((v: string | number) =>
-                typeof v === 'string' ? parseFloat(v) : v
-            );
-
-            const { lat, lng } = result.coordinate;
-
-            return lat >= south && lat <= north && lng >= west && lng <= east;
-        },
-        [hasResult, result]
-    );
 
     if (loading || error) {
         return null;
@@ -261,7 +246,6 @@ function MapController({
                     key={JSON.stringify(data)}
                     data={data as never}
                     style={style}
-                    filter={featureFilter as never}
                     eventHandlers={{
                         add(e) {
                             const layer = e.target;

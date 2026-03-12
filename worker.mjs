@@ -41,6 +41,8 @@ export default {
       nominatimUrl.searchParams.set('format', 'geojson');
       nominatimUrl.searchParams.set('polygon_geojson', '1');
       nominatimUrl.searchParams.set('polygon_threshold', '0.005');
+      // 最も関連性の高い1件だけ取得する（複数フィーチャによる余計な境界表示を防ぐ）
+      nominatimUrl.searchParams.set('limit', '1');
 
       const nominatimRequest = new Request(nominatimUrl.toString(), {
         method: 'GET',
