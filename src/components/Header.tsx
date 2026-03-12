@@ -2,53 +2,31 @@ import { Target } from 'lucide-react';
 
 export default function Header() {
     return (
-        <header className="relative overflow-hidden">
-            {/* Gradient background */}
-            <div
-                className="absolute inset-0"
-                style={{
-                    background:
-                        'linear-gradient(135deg, #0ea5e9 0%, #06b6d4 30%, #10b981 70%, #f59e0b 100%)',
-                }}
-            />
-            {/* Decorative floating shapes */}
-            <div className="absolute inset-0 overflow-hidden pointer-events-none">
-                <div
-                    className="absolute w-32 h-32 rounded-full opacity-15"
-                    style={{
-                        background: 'white',
-                        top: '-1rem',
-                        right: '10%',
-                        filter: 'blur(2px)',
-                    }}
-                />
-                <div
-                    className="absolute w-20 h-20 rounded-full opacity-10"
-                    style={{
-                        background: 'white',
-                        bottom: '-0.5rem',
-                        left: '15%',
-                        filter: 'blur(2px)',
-                    }}
-                />
-            </div>
-
-            <div className="relative z-10 px-4 py-5 sm:py-6 text-center">
-                <div className="flex items-center justify-center gap-3 mb-1">
+        <header className="sticky top-0 z-30 border-b border-white/10 bg-slate-950/92 backdrop-blur-xl">
+            <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-4 sm:px-6 sm:py-5">
+                <div className="flex items-center gap-3">
                     <span className="text-3xl sm:text-4xl" role="img" aria-label="dart">
                         🎯
                     </span>
-                    <h1
-                        className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight"
-                        style={{ fontFamily: 'var(--font-display)' }}
-                    >
-                        ダーツの旅
-                    </h1>
-                    <Target className="w-6 h-6 sm:w-7 sm:h-7 text-white/80" />
+                    <div>
+                        <div className="flex items-center gap-2">
+                            <h1
+                                className="text-2xl font-extrabold tracking-tight text-white sm:text-3xl"
+                                style={{ fontFamily: 'var(--font-display)' }}
+                            >
+                                ダーツの旅
+                            </h1>
+                            <Target className="h-5 w-5 text-white/70 sm:h-6 sm:w-6" />
+                        </div>
+                        <p className="text-sm font-medium text-slate-300 sm:text-base">
+                            ダーツを投げて、まだ見ぬ場所へ旅立とう！
+                        </p>
+                    </div>
                 </div>
-                <p className="text-sm sm:text-base text-white/85 font-medium">
-                    ダーツを投げて、まだ見ぬ場所へ旅立とう！
-                </p>
+
+                <div className="hidden rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-semibold tracking-[0.24em] text-slate-300 sm:block">
+                    RANDOM TRIP
+                </div>
             </div>
         </header>
     );

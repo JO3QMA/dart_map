@@ -94,16 +94,16 @@ export default function RegionSelector({
     return (
         <div className="glass-card p-4 sm:p-6">
             {/* Mode buttons */}
-            <div className="mb-4">
-                <p className="text-sm font-semibold text-gray-600 mb-3">
+            <div className="mb-5">
+                <p className="mb-3 text-sm font-semibold text-gray-600">
                     🗺️ エリアモードを選択
                 </p>
-                <div className="flex flex-wrap gap-2">
+                <div className="segmented-control">
                     {MODE_OPTIONS.map(({ value, label, icon: Icon }) => (
                         <button
                             key={value}
                             id={`mode-btn-${value}`}
-                            className={`btn btn-outline ${mode === value ? 'active' : ''}`}
+                            className={`seg-btn ${mode === value ? 'active' : ''}`}
                             onClick={() => handleModeChange(value)}
                         >
                             <Icon className="w-4 h-4" />
@@ -115,7 +115,7 @@ export default function RegionSelector({
 
             {/* Prefecture selector */}
             {(mode === 'prefecture' || mode === 'city') && (
-                <div className="flex flex-wrap items-center gap-3 animate-fade-in">
+                <div className="animate-fade-in flex flex-wrap items-center gap-3">
                     <label className="text-sm font-semibold text-gray-600">
                         📍 都道府県
                     </label>
@@ -140,8 +140,8 @@ export default function RegionSelector({
 
             {/* Designated city toggle & city selector */}
             {selectedPrefecture && (mode === 'prefecture' || mode === 'city') && (
-                <div className="mt-3 flex flex-col gap-2 animate-fade-in">
-                    <label className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer select-none">
+                <div className="animate-fade-in mt-4 flex flex-col gap-3">
+                    <label className="flex cursor-pointer select-none items-center gap-2 rounded-full bg-slate-100 px-3 py-2 text-sm text-gray-600">
                         <input
                             type="checkbox"
                             checked={mergeDesignatedCities}
@@ -152,7 +152,7 @@ export default function RegionSelector({
                     </label>
 
                     {mode === 'city' && (
-                        <div className="flex items-center gap-3">
+                        <div className="flex flex-wrap items-center gap-3">
                             <label className="text-sm font-semibold text-gray-600">
                                 🏙️ 市区町村
                             </label>
@@ -175,8 +175,8 @@ export default function RegionSelector({
             )}
 
             {/* Instruction */}
-            <div className="mt-4 pt-3 border-t border-gray-100">
-                <p className="text-xs text-gray-400 flex items-center gap-1">
+            <div className="mt-5 border-t border-slate-200/70 pt-4">
+                <p className="flex items-center gap-1 text-xs text-gray-400">
                     <span>👆</span>
                     {mode === 'country'
                         ? '下の地図エリアをクリックしてダーツを投げよう！'

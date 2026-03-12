@@ -184,7 +184,8 @@ export default function App() {
         <div className="min-h-screen flex flex-col">
             <Header />
 
-            <main className="flex-1 px-4 py-6 sm:py-8 max-w-2xl mx-auto w-full space-y-6">
+            <main className="mx-auto flex w-full max-w-5xl flex-1 px-4 py-6 sm:px-6 sm:py-8">
+                <div className="mx-auto w-full max-w-3xl space-y-6">
                 <RegionSelector
                     mode={mode}
                     onModeChange={setMode}
@@ -213,6 +214,7 @@ export default function App() {
                         © 2026 ダーツの旅 — バーチャル旅行アプリ
                     </p>
                 </footer>
+                </div>
             </main>
 
             {/* Result Modal */}
