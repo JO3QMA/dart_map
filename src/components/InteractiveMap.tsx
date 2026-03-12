@@ -1,89 +1,126 @@
-import { useRef, useState, useCallback } from 'react';
-import type { DartPosition } from '../types';
+import { useCallback, useMemo, useState } from 'react';
+import {
+    GeoJSON as LeafletGeoJSON,
+    MapContainer,
+    TileLayer,
+    useMap,
+    useMapEvents,
+} from 'react-leaflet';
+import type { GameMode, Region, DartPosition } from '../types';
 
-interface InteractiveMapProps {
+export interface InteractiveMapProps {
     isAnimating: boolean;
     onThrow: (clickX: number, clickY: number) => void;
     disabled: boolean;
+    mode: GameMode;
+    prefectureName: string;
+    cityName: string;
+    result: Region | null;
+    parentName?: string;
 }
+
+interface MapControllerProps {
+    query: string;
+    hasResult: boolean;
+    isAnimating: boolean;
+    disabled: boolean;
+    onMapClick: (xPercent: number, yPercent: number) => void;
+}
+
+type BoundaryGeoJSON = GeoJSON.FeatureCollection;
 
 export default function InteractiveMap({
     isAnimating,
     onThrow,
     disabled,
+    mode,
+    prefectureName,
+    cityName,
+    result,
+    parentName,
 }: InteractiveMapProps) {
-    const mapRef = useRef<HTMLDivElement>(null);
     const [showDart, setShowDart] = useState(false);
     const [dartPos, setDartPos] = useState<DartPosition>({ x: 50, y: 100 });
     const [landed, setLanded] = useState(false);
     const [impactPos, setImpactPos] = useState<DartPosition | null>(null);
 
-    const handleClick = useCallback(
-        (e: React.MouseEvent<HTMLDivElement>) => {
-            if (isAnimating || disabled || !mapRef.current) return;
+    const query = useMemo(() => {
+        if (result) {
+            return `${parentName || ''} ${result.name}`.trim();
+        }
+        if (mode === 'city') {
+            return `${prefectureName} ${cityName}`.trim();
+        }
+        if (mode === 'prefecture') {
+            return prefectureName;
+        }
+        return '日本';
+    }, [result, parentName, mode, prefectureName, cityName]);
 
-            const rect = mapRef.current.getBoundingClientRect();
-            const x = ((e.clientX - rect.left) / rect.width) * 100;
-            const y = ((e.clientY - rect.top) / rect.height) * 100;
+    const handleMapClick = useCallback(
+        (x: number, y: number) => {
+            if (isAnimating || disabled) return;
 
-            // Reset state
+            const xPercent = (x / 1) * 100;
+            const yPercent = (y / 1) * 100;
+
             setLanded(false);
             setImpactPos(null);
             setShowDart(true);
-            setDartPos({ x: 50, y: 105 }); // Start from bottom center
+            setDartPos({ x: 50, y: 105 });
 
-            // Fly to click position
             requestAnimationFrame(() => {
                 requestAnimationFrame(() => {
-                    setDartPos({ x, y });
+                    setDartPos({ x: xPercent, y: yPercent });
                 });
             });
 
-            // Dart landing effect
             setTimeout(() => {
                 setLanded(true);
-                setImpactPos({ x, y });
+                setImpactPos({ x: xPercent, y: yPercent });
             }, 700);
 
-            // Notify parent
-            onThrow(x, y);
+            onThrow(xPercent, yPercent);
 
-            // Clean up dart after result shows
             setTimeout(() => {
                 setShowDart(false);
                 setLanded(false);
                 setImpactPos(null);
             }, 2000);
         },
-        [isAnimating, disabled, onThrow]
+        [disabled, isAnimating, onThrow]
     );
 
     return (
         <div className="relative">
             <div
-                ref={mapRef}
                 id="map-area"
                 className="map-area"
-                onClick={handleClick}
                 style={{
                     cursor: disabled ? 'not-allowed' : isAnimating ? 'wait' : 'crosshair',
                     opacity: disabled ? 0.6 : 1,
                 }}
             >
-                {/* Japan silhouette / decorative elements */}
-                <JapanBackground />
+                <MapContainer
+                    center={[36.5, 137]}
+                    zoom={5}
+                    style={{ width: '100%', height: '100%' }}
+                    zoomControl={false}
+                    attributionControl
+                >
+                    <TileLayer
+                        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                        attribution="&copy; OpenStreetMap contributors"
+                    />
+                    <MapController
+                        query={query}
+                        hasResult={!!result}
+                        isAnimating={isAnimating}
+                        disabled={disabled}
+                        onMapClick={handleMapClick}
+                    />
+                </MapContainer>
 
-                {/* Grid overlay for a techy feel */}
-                <div
-                    className="absolute inset-0 pointer-events-none opacity-[0.06]"
-                    style={{
-                        backgroundImage:
-                            'linear-gradient(rgba(0,0,0,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(0,0,0,0.5) 1px, transparent 1px)',
-                        backgroundSize: '40px 40px',
-                    }}
-                />
-
-                {/* Center target indicator */}
                 {!showDart && !isAnimating && !disabled && (
                     <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                         <div className="animate-pulse-glow rounded-full w-16 h-16 flex items-center justify-center">
@@ -92,7 +129,6 @@ export default function InteractiveMap({
                     </div>
                 )}
 
-                {/* Instruction text */}
                 {!showDart && !isAnimating && !disabled && (
                     <div className="absolute bottom-4 left-0 right-0 text-center pointer-events-none">
                         <span className="inline-block bg-white/80 backdrop-blur-sm rounded-full px-4 py-1.5 text-xs font-semibold text-gray-600 shadow-sm">
@@ -101,7 +137,6 @@ export default function InteractiveMap({
                     </div>
                 )}
 
-                {/* Dart element */}
                 {showDart && (
                     <div
                         className={`dart ${landed ? 'animate-dart-stick' : ''}`}
@@ -115,7 +150,6 @@ export default function InteractiveMap({
                     </div>
                 )}
 
-                {/* Impact ripple */}
                 {impactPos && (
                     <div
                         className="dart-impact"
@@ -126,7 +160,6 @@ export default function InteractiveMap({
                     />
                 )}
 
-                {/* Disabled overlay */}
                 {disabled && (
                     <div className="absolute inset-0 flex items-center justify-center bg-gray-900/10 rounded-2xl">
                         <span className="bg-white/90 backdrop-blur-sm rounded-full px-5 py-2 text-sm font-semibold text-gray-500 shadow">
@@ -139,37 +172,103 @@ export default function InteractiveMap({
     );
 }
 
-/** Decorative Japan-shaped background shapes */
-function JapanBackground() {
-    return (
-        <svg
-            className="absolute inset-0 w-full h-full pointer-events-none"
-            viewBox="0 0 400 300"
-            preserveAspectRatio="xMidYMid meet"
-        >
-            <defs>
-                <linearGradient id="japanGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" stopColor="#60a5fa" stopOpacity="0.15" />
-                    <stop offset="100%" stopColor="#34d399" stopOpacity="0.1" />
-                </linearGradient>
-            </defs>
+function MapController({ query, hasResult, isAnimating, disabled, onMapClick }: MapControllerProps) {
+    const map = useMap();
+    const [data, setData] = useState<BoundaryGeoJSON | null>(null);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
 
-            {/* Stylized Japan archipelago shapes */}
-            {/* Hokkaido */}
-            <ellipse cx="290" cy="55" rx="38" ry="28" fill="url(#japanGrad)" stroke="#93c5fd" strokeWidth="0.5" />
-            {/* Honshu */}
-            <path
-                d="M170,80 Q200,75 240,90 Q270,100 280,130 Q275,160 260,180 Q240,200 210,210 Q180,215 160,200 Q145,185 140,160 Q138,130 150,105 Q158,88 170,80Z"
-                fill="url(#japanGrad)"
-                stroke="#93c5fd"
-                strokeWidth="0.5"
-            />
-            {/* Shikoku */}
-            <ellipse cx="185" cy="225" rx="28" ry="15" fill="url(#japanGrad)" stroke="#93c5fd" strokeWidth="0.5" />
-            {/* Kyushu */}
-            <ellipse cx="140" cy="240" rx="25" ry="30" fill="url(#japanGrad)" stroke="#93c5fd" strokeWidth="0.5" />
-            {/* Okinawa */}
-            <ellipse cx="105" cy="270" rx="8" ry="5" fill="url(#japanGrad)" stroke="#93c5fd" strokeWidth="0.5" />
-        </svg>
+    useMapEvents({
+        click(e) {
+            if (isAnimating || disabled) return;
+            const size = map.getSize();
+            const xPercent = (e.containerPoint.x / size.x) * 100;
+            const yPercent = (e.containerPoint.y / size.y) * 100;
+            onMapClick(xPercent, yPercent);
+        },
+    });
+
+    useMemo(() => {
+        let cancelled = false;
+
+        const fetchBoundary = async () => {
+            if (!query) {
+                setData(null);
+                setError(null);
+                return;
+            }
+
+            setLoading(true);
+            setError(null);
+            setData(null);
+
+            try {
+                const params = new URLSearchParams({ q: query });
+                const res = await fetch(`/api/boundary?${params.toString()}`);
+
+                if (!res.ok) {
+                    throw new Error(`Failed to fetch boundary: ${res.status}`);
+                }
+
+                const json = (await res.json()) as BoundaryGeoJSON;
+                if (cancelled) return;
+
+                setData(json);
+            } catch (err) {
+                if (cancelled) return;
+                console.error(err);
+                setError('境界データの取得に失敗しました');
+            } finally {
+                if (!cancelled) {
+                    setLoading(false);
+                }
+            }
+        };
+
+        fetchBoundary();
+
+        return () => {
+            cancelled = true;
+        };
+    }, [query]);
+
+    const style = useCallback(
+        () => ({
+            color: hasResult ? '#ef4444' : '#3b82f6',
+            weight: hasResult ? 3 : 2,
+            dashArray: hasResult ? undefined : '6 4',
+            fillColor: hasResult ? '#ef4444' : '#3b82f6',
+            fillOpacity: hasResult ? 0.1 : 0.05,
+        }),
+        [hasResult]
     );
+
+    if (data) {
+        return (
+            <LeafletGeoJSON
+                key={query}
+                data={data as never}
+                style={style}
+                eventHandlers={{
+                    add(e) {
+                        const layer = e.target;
+                        try {
+                            const bounds = layer.getBounds();
+                            if (bounds && bounds.isValid && bounds.isValid()) {
+                                map.flyToBounds(bounds, { padding: [20, 20] });
+                            }
+                        } catch {
+                            // ignore
+                        }
+                    },
+                }}
+            />
+        );
+    }
+
+    if (loading || error) {
+        return null;
+    }
+
+    return null;
 }

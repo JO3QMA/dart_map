@@ -200,6 +200,11 @@ export default function App() {
                     isAnimating={isAnimating}
                     onThrow={handleThrow}
                     disabled={isMapDisabled}
+                    mode={mode}
+                    prefectureName={prefectureName}
+                    cityName={cityName}
+                    result={result}
+                    parentName={parentName}
                 />
 
                 {/* Footer attribution */}
