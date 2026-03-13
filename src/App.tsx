@@ -214,57 +214,56 @@ export default function App() {
 
             {/* フッター（ライセンス・コピーライト／地図上オーバーレイ） */}
             <footer className="pointer-events-none fixed bottom-0 left-0 w-full z-[1000] bg-white/75 backdrop-blur-md px-4 py-1.5">
-                <div className="mx-auto flex max-w-5xl items-center justify-between text-[11px] text-gray-500">
+                <div className="pointer-events-auto flex w-full flex-wrap items-center justify-center gap-x-3 gap-y-1 text-[11px] text-gray-500">
                     <span>© 2026 ダーツの旅 — バーチャル旅行アプリ</span>
-                    <div className="pointer-events-auto flex items-center gap-2">
-                        <a
-                            href="https://leafletjs.com"
-                            title="A JavaScript library for interactive maps"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1 hover:text-gray-700"
+                    <span>·</span>
+                    <a
+                        href="https://leafletjs.com"
+                        title="A JavaScript library for interactive maps"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1 hover:text-gray-700"
+                    >
+                        <svg
+                            aria-hidden="true"
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="12"
+                            height="8"
+                            viewBox="0 0 12 8"
                         >
-                            <svg
-                                aria-hidden="true"
-                                xmlns="http://www.w3.org/2000/svg"
-                                width="12"
-                                height="8"
-                                viewBox="0 0 12 8"
-                            >
-                                <path fill="#4C7BE1" d="M0 0h12v4H0z" />
-                                <path fill="#FFD500" d="M0 4h12v3H0z" />
-                                <path fill="#E0BC00" d="M0 7h12v1H0z" />
-                            </svg>
-                            <span>Leaflet</span>
-                        </a>
-                        <span>·</span>
-                        <a
-                            href="https://www.openstreetmap.org/copyright"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="hover:text-gray-700"
-                        >
-                            © OpenStreetMap contributors
-                        </a>
-                        <span>·</span>
-                        <a
-                            href="https://carto.com/attributions"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="hover:text-gray-700"
-                        >
-                            © CARTO
-                        </a>
-                        <span>·</span>
-                        <a
-                            href="https://creativecommons.org/licenses/by/4.0/"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="hover:text-gray-700"
-                        >
-                            Geolonia 住所データ
-                        </a>
-                    </div>
+                            <path fill="#4C7BE1" d="M0 0h12v4H0z" />
+                            <path fill="#FFD500" d="M0 4h12v3H0z" />
+                            <path fill="#E0BC00" d="M0 7h12v1H0z" />
+                        </svg>
+                        <span>Leaflet</span>
+                    </a>
+                    <span>·</span>
+                    <a
+                        href="https://www.openstreetmap.org/copyright"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="hover:text-gray-700"
+                    >
+                        © OpenStreetMap contributors
+                    </a>
+                    <span>·</span>
+                    <a
+                        href="https://carto.com/attributions"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="hover:text-gray-700"
+                    >
+                        © CARTO
+                    </a>
+                    <span>·</span>
+                    <a
+                        href="https://creativecommons.org/licenses/by/4.0/"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="hover:text-gray-700"
+                    >
+                        Geolonia 住所データ
+                    </a>
                 </div>
             </footer>
 
