@@ -469,11 +469,6 @@ body {
   z-index: 10 !important;
 }
 
-/* Leaflet の attribution をフッターに飲み込まれないよう少し上にオフセット */
-.map-area .leaflet-bottom {
-  bottom: calc(var(--footer-height) + 8px);
-}
-
 .modal-content {
   background: var(--color-surface-strong);
   border-radius: 1.5rem;
