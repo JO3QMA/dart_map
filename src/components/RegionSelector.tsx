@@ -92,9 +92,9 @@ export default function RegionSelector({
     };
 
     return (
-        <div className="glass-card glass-card-floating p-3 sm:p-4">
+        <div className="glass-card glass-card-floating flex flex-col gap-6 p-5 sm:p-6">
             {/* Mode buttons */}
-            <div className="mb-5">
+            <div>
                 <p className="mb-3 text-sm font-semibold text-gray-600">
                     🗺️ エリアモードを選択
                 </p>
@@ -140,7 +140,7 @@ export default function RegionSelector({
 
             {/* Designated city toggle & city selector */}
             {selectedPrefecture && (mode === 'prefecture' || mode === 'city') && (
-                <div className="animate-fade-in mt-4 flex flex-col gap-3">
+                <div className="animate-fade-in flex flex-col gap-3">
                     {/* 背景帯を外し、カードになじむ軽やかなトグル行に調整 */}
                     <label className="flex cursor-pointer select-none items-center gap-2 px-1 py-2 text-sm text-gray-600">
                         <input
@@ -176,7 +176,7 @@ export default function RegionSelector({
             )}
 
             {/* Instruction */}
-            <div className="mt-5 border-t border-slate-200/70 pt-4">
+            <div className="border-t border-slate-200/70 pt-4">
                 {/* ガイド文のコントラストを上げて視認性を改善 */}
                 <p className="flex items-center gap-1 text-xs text-gray-600">
                     <span>👆</span>
