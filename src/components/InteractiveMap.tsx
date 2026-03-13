@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
     GeoJSON as LeafletGeoJSON,
     MapContainer,
@@ -34,7 +34,7 @@ interface MapControllerProps {
     hasResult: boolean;
     isAnimating: boolean;
     disabled: boolean;
-    onMapClick: (xPercent: number, yPercent: number) => void;
+    onMapClick: (xPercent: number, yPercent: number, point: { x: number; y: number }) => void;
     result: Region | null;
     mode: GameMode;
     prefectureName: string;
@@ -52,6 +52,7 @@ export default function InteractiveMap({
     result,
     parentName,
 }: InteractiveMapProps) {
+    const mapAreaRef = useRef<HTMLDivElement | null>(null);
     const dartIcon = useMemo(
         () =>
             L.divIcon({
@@ -85,8 +86,50 @@ export default function InteractiveMap({
     }, [result, parentName, mode, prefectureName, cityName]);
 
     const handleMapClick = useCallback(
-        (xPercent: number, yPercent: number) => {
+        (xPercent: number, yPercent: number, point: { x: number; y: number }) => {
             if (isAnimating || disabled) return;
+
+            const mapArea = mapAreaRef.current;
+            if (mapArea) {
+                // 画面外から着地点へ飛び込むダーツ演出を追加
+                const dart = document.createElement('div');
+                dart.className = 'dart-fly';
+                dart.textContent = '🎯';
+
+                const startX = -36;
+                const startY = mapArea.clientHeight + 36;
+                const angle = (Math.atan2(point.y - startY, point.x - startX) * 180) / Math.PI;
+
+                dart.style.left = `${startX}px`;
+                dart.style.top = `${startY}px`;
+                dart.style.transform = `translate(-50%, -50%) rotate(${angle}deg) scale(0.82)`;
+                mapArea.appendChild(dart);
+
+                requestAnimationFrame(() => {
+                    dart.style.left = `${point.x}px`;
+                    dart.style.top = `${point.y}px`;
+                    dart.style.transform = `translate(-50%, -50%) rotate(${angle}deg) scale(1)`;
+                });
+
+                // 着弾時に複数の波紋を重ねて、命中感を強める
+                window.setTimeout(() => {
+                    dart.remove();
+
+                    [0, 100, 200].forEach((delay, index) => {
+                        window.setTimeout(() => {
+                            if (!mapArea.isConnected) return;
+
+                            const ripple = document.createElement('div');
+                            ripple.className = 'dart-impact';
+                            ripple.style.left = `${point.x}px`;
+                            ripple.style.top = `${point.y}px`;
+                            ripple.style.animationDelay = `${index * 0.06}s`;
+                            mapArea.appendChild(ripple);
+                            window.setTimeout(() => ripple.remove(), 900);
+                        }, delay);
+                    });
+                }, 650);
+            }
 
             onThrow(xPercent, yPercent);
         },
@@ -94,25 +137,26 @@ export default function InteractiveMap({
     );
 
     return (
-        <div className="relative">
+        <div className="relative h-full w-full">
             <div
                 id="map-area"
                 className="map-area"
+                ref={mapAreaRef}
                 style={{
                     cursor: disabled ? 'not-allowed' : isAnimating ? 'wait' : 'crosshair',
                     opacity: disabled ? 0.6 : 1,
                 }}
             >
                 <MapContainer
-                    center={[36.5, 137]}
-                    zoom={5}
+                    center={[38, 137]}
+                    zoom={6}
                     style={{ width: '100%', height: '100%' }}
                     zoomControl={false}
-                    attributionControl
+                    attributionControl={false}
                 >
                     <TileLayer
-                        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                        attribution="&copy; OpenStreetMap contributors"
+                        url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
+                        attribution='&copy; <a href="https://carto.com/">CARTO</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
                     />
                     {result && (
                         <Marker
@@ -167,7 +211,10 @@ function MapController({
             const size = map.getSize();
             const xPercent = (e.containerPoint.x / size.x) * 100;
             const yPercent = (e.containerPoint.y / size.y) * 100;
-            onMapClick(xPercent, yPercent);
+            onMapClick(xPercent, yPercent, {
+                x: e.containerPoint.x,
+                y: e.containerPoint.y,
+            });
         },
     });
 
@@ -268,14 +315,6 @@ function MapController({
     }, [mode, prefectureName, result]);
 
     // 抽選結果が確定したら、その地点へマップを移動
-    useEffect(() => {
-        if (!result) return;
-        const { lat, lng } = result.coordinate;
-        const currentZoom = map.getZoom();
-        const targetZoom = Math.max(currentZoom, 9);
-        map.flyTo([lat, lng], targetZoom, { duration: 1.2 });
-    }, [map, result]);
-
     useEffect(() => {
         if (!result) return;
         const { lat, lng } = result.coordinate;

@@ -6,8 +6,10 @@
   "scripts": {
     "dev": "vite",
     "build": "npm run generate:regions && tsc -b && vite build",
+    "build:watch": "vite build --watch",
     "preview": "vite preview",
-    "generate:regions": "tsx scripts/generateRegionsFromGeolonia.ts"
+    "generate:regions": "tsx scripts/generateRegionsFromGeolonia.ts",
+    "dev:wrangler": "npm run build && npx wrangler dev"
   },
   "dependencies": {
     "leaflet": "^1.9.4",

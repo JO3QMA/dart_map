@@ -181,21 +181,9 @@ export default function App() {
     }, []);
 
     return (
-        <div className="min-h-screen flex flex-col">
-            <Header />
-
-            <main className="flex-1 px-4 py-6 sm:py-8 max-w-2xl mx-auto w-full space-y-6">
-                <RegionSelector
-                    mode={mode}
-                    onModeChange={setMode}
-                    selectedPrefecture={selectedPrefecture}
-                    onPrefectureChange={setSelectedPrefecture}
-                    selectedCity={selectedCity}
-                    onCityChange={setSelectedCity}
-                    mergeDesignatedCities={mergeDesignatedCities}
-                    onMergeDesignatedCitiesChange={setMergeDesignatedCities}
-                />
-
+        <div className="app-root">
+            {/* 地図レイヤー（全画面・最下層） */}
+            <div className="map-layer">
                 <InteractiveMap
                     isAnimating={isAnimating}
                     onThrow={handleThrow}
@@ -206,14 +194,78 @@ export default function App() {
                     result={result}
                     parentName={parentName}
                 />
+            </div>
 
-                {/* Footer attribution */}
-                <footer className="text-center pt-4">
-                    <p className="text-xs text-gray-400">
-                        © 2026 ダーツの旅 — バーチャル旅行アプリ
-                    </p>
-                </footer>
-            </main>
+            <Header />
+
+            {/* 操作パネル（地図上にオーバーレイ） */}
+            <div className="floating-panel">
+                <RegionSelector
+                    mode={mode}
+                    onModeChange={setMode}
+                    selectedPrefecture={selectedPrefecture}
+                    onPrefectureChange={setSelectedPrefecture}
+                    selectedCity={selectedCity}
+                    onCityChange={setSelectedCity}
+                    mergeDesignatedCities={mergeDesignatedCities}
+                    onMergeDesignatedCitiesChange={setMergeDesignatedCities}
+                />
+            </div>
+
+            {/* フッター（ライセンス・コピーライト／地図上オーバーレイ） */}
+            <footer className="pointer-events-none fixed bottom-0 left-0 w-full z-[1000] bg-white/75 backdrop-blur-md px-4 py-1.5">
+                <div className="pointer-events-auto flex w-full flex-wrap items-center justify-center gap-x-3 gap-y-1 text-[11px] text-gray-500">
+                    <span>© 2026 ダーツの旅 — バーチャル旅行アプリ</span>
+                    <span>·</span>
+                    <a
+                        href="https://leafletjs.com"
+                        title="A JavaScript library for interactive maps"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1 hover:text-gray-700"
+                    >
+                        <svg
+                            aria-hidden="true"
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="12"
+                            height="8"
+                            viewBox="0 0 12 8"
+                        >
+                            <path fill="#4C7BE1" d="M0 0h12v4H0z" />
+                            <path fill="#FFD500" d="M0 4h12v3H0z" />
+                            <path fill="#E0BC00" d="M0 7h12v1H0z" />
+                        </svg>
+                        <span>Leaflet</span>
+                    </a>
+                    <span>·</span>
+                    <a
+                        href="https://www.openstreetmap.org/copyright"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="hover:text-gray-700"
+                    >
+                        © OpenStreetMap contributors
+                    </a>
+                    <span>·</span>
+                    <a
+                        href="https://carto.com/attributions"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="hover:text-gray-700"
+                    >
+                        © CARTO
+                    </a>
+                    <span>·</span>
+                    <a
+                        href="https://creativecommons.org/licenses/by/4.0/"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="hover:text-gray-700"
+                    >
+                        Geolonia 住所データ
+                    </a>
+                </div>
+            </footer>
 
             {/* Result Modal */}
             {showModal && result && (
