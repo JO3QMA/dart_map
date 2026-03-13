@@ -560,6 +560,14 @@ body {
    ========================================= */
 
 @media (max-width: 640px) {
+  html,
+  body,
+  #root,
+  .app-root {
+    height: 100dvh;
+    min-height: 100vh;
+  }
+
   .floating-panel {
     left: 20px;
     right: 20px;
