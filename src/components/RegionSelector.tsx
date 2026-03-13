@@ -92,9 +92,9 @@ export default function RegionSelector({
     };
 
     return (
-        <div className="glass-card glass-card-floating flex flex-col gap-6 p-5 sm:p-6">
+        <div className="glass-card glass-card-floating flex flex-col gap-4 px-5 py-5 sm:px-6 sm:py-5">
             {/* Mode buttons */}
-            <div>
+            <div className="mb-4 sm:mb-5">
                 <p className="mb-3 text-sm font-semibold text-gray-600">
                     🗺️ エリアモードを選択
                 </p>
@@ -113,71 +113,72 @@ export default function RegionSelector({
                 </div>
             </div>
 
-            {/* Prefecture selector */}
+            {/* Prefecture + Designated city toggle + City selector grouped */}
             {(mode === 'prefecture' || mode === 'city') && (
-                <div className="animate-fade-in flex flex-wrap items-center gap-3">
-                    <label className="text-sm font-semibold text-gray-600">
-                        📍 都道府県
-                    </label>
-                    <select
-                        id="prefecture-select"
-                        className="select-styled"
-                        value={selectedPrefecture || ''}
-                        onChange={(e) => {
-                            onPrefectureChange(e.target.value || null);
-                            onCityChange(null);
-                        }}
-                    >
-                        <option value="">選択してください</option>
-                        {prefectures.map((p) => (
-                            <option key={p.id} value={p.id}>
-                                {p.name}
-                            </option>
-                        ))}
-                    </select>
-                </div>
-            )}
-
-            {/* Designated city toggle & city selector */}
-            {selectedPrefecture && (mode === 'prefecture' || mode === 'city') && (
                 <div className="animate-fade-in flex flex-col gap-3">
-                    {/* 背景帯を外し、カードになじむ軽やかなトグル行に調整 */}
-                    <label className="flex cursor-pointer select-none items-center gap-2 px-1 py-2 text-sm text-gray-600">
-                        <input
-                            type="checkbox"
-                            checked={mergeDesignatedCities}
-                            onChange={(e) => onMergeDesignatedCitiesChange(e.target.checked)}
-                            className="w-4 h-4"
-                        />
-                        政令指定都市の区をまとめる
-                    </label>
+                    {/* Prefecture selector */}
+                    <div className="flex flex-wrap items-center gap-3">
+                        <label className="text-sm font-semibold text-gray-600">
+                            📍 都道府県
+                        </label>
+                        <select
+                            id="prefecture-select"
+                            className="select-styled"
+                            value={selectedPrefecture || ''}
+                            onChange={(e) => {
+                                onPrefectureChange(e.target.value || null);
+                                onCityChange(null);
+                            }}
+                        >
+                            <option value="">選択してください</option>
+                            {prefectures.map((p) => (
+                                <option key={p.id} value={p.id}>
+                                    {p.name}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
 
-                    {mode === 'city' && (
-                        <div className="flex flex-wrap items-center gap-3">
-                            <label className="text-sm font-semibold text-gray-600">
-                                🏙️ 市区町村
+                    {/* Designated city toggle & city selector */}
+                    {selectedPrefecture && (
+                        <div className="flex flex-col gap-3">
+                            <label className="flex cursor-pointer select-none items-center gap-2 px-1 py-2 text-sm text-gray-600">
+                                <input
+                                    type="checkbox"
+                                    checked={mergeDesignatedCities}
+                                    onChange={(e) => onMergeDesignatedCitiesChange(e.target.checked)}
+                                    className="w-4 h-4"
+                                />
+                                政令指定都市の区をまとめる
                             </label>
-                            <select
-                                id="city-select"
-                                className="select-styled"
-                                value={selectedCity || ''}
-                                onChange={(e) => onCityChange(e.target.value || null)}
-                            >
-                                <option value="">選択してください</option>
-                                {displayCities.map((c) => (
-                                    <option key={c.id} value={c.id}>
-                                        {c.name}
-                                    </option>
-                                ))}
-                            </select>
+
+                            {mode === 'city' && (
+                                <div className="flex flex-wrap items-center gap-3">
+                                    <label className="text-sm font-semibold text-gray-600">
+                                        🏙️ 市区町村
+                                    </label>
+                                    <select
+                                        id="city-select"
+                                        className="select-styled"
+                                        value={selectedCity || ''}
+                                        onChange={(e) => onCityChange(e.target.value || null)}
+                                    >
+                                        <option value="">選択してください</option>
+                                        {displayCities.map((c) => (
+                                            <option key={c.id} value={c.id}>
+                                                {c.name}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+                            )}
                         </div>
                     )}
                 </div>
             )}
 
             {/* Instruction */}
-            <div className="border-t border-slate-200/70 pt-4">
-                {/* ガイド文のコントラストを上げて視認性を改善 */}
+            <div className="border-t border-slate-200/70 pt-3 pb-3 sm:pt-4 sm:pb-4">
                 <p className="flex items-center gap-1 text-xs text-gray-600">
                     <span>👆</span>
                     {mode === 'country'
