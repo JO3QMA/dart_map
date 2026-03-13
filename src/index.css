@@ -18,7 +18,6 @@
   --shadow-soft: 0 18px 40px -24px rgba(15, 23, 42, 0.28);
   --font-display: 'Outfit', 'Noto Sans JP', sans-serif;
   --font-body: 'Noto Sans JP', 'Outfit', sans-serif;
-  --footer-height: 40px;
 }
 
 * {
@@ -63,7 +62,7 @@ body {
 /* 操作パネル：地図上にオーバーレイ（PC） */
 .floating-panel {
   position: absolute;
-  top: 80px;
+  top: 104px;
   left: 20px;
   z-index: 1000;
 }
@@ -246,6 +245,18 @@ body {
   backdrop-filter: blur(8px);
 }
 
+/* ガイドテキスト用：地図上での視認性を高めるための軽いチップ風背景 */
+.instruction-text {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.4rem 0.75rem;
+  border-radius: 999px;
+  background-color: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(6px);
+  box-shadow: 0 6px 18px -10px rgba(15, 23, 42, 0.4);
+}
+
 /* =========================================
    Select
    ========================================= */
@@ -335,13 +346,12 @@ body {
    Map Area / Fullscreen map layer
    ========================================= */
 
-/* 地図はフッターの高さ分だけ上で止め、Leaflet の attribution が隠れないようにする */
 .map-layer {
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
-  bottom: calc(var(--footer-height) + env(safe-area-inset-bottom, 0px));
+  bottom: 0;
   z-index: 1;
 }
 
@@ -526,34 +536,6 @@ body {
 .sns-btn-share {
   background: linear-gradient(135deg, #8b5cf6, #7c3aed);
   box-shadow: 0 4px 10px rgba(139, 92, 246, 0.3);
-}
-
-/* =========================================
-   App footer (overlay at bottom)
-   ========================================= */
-
-.app-footer {
-  position: fixed;
-  bottom: env(safe-area-inset-bottom, 0px);
-  left: 0;
-  right: 0;
-  width: 100%;
-  z-index: 1000;
-  min-height: var(--footer-height);
-  background-color: rgba(255, 255, 255, 0.8);
-  backdrop-filter: blur(4px);
-  padding: 4px 16px calc(4px + env(safe-area-inset-bottom, 0px));
-  font-size: 12px;
-  color: var(--color-text-muted);
-}
-
-.app-footer a {
-  color: var(--color-primary);
-  text-decoration: none;
-}
-
-.app-footer a:hover {
-  text-decoration: underline;
 }
 
 /* =========================================

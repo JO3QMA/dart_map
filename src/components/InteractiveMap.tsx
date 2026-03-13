@@ -148,11 +148,11 @@ export default function InteractiveMap({
                 }}
             >
                 <MapContainer
-                    center={[36.5, 137]}
-                    zoom={5}
+                    center={[38, 137]}
+                    zoom={6}
                     style={{ width: '100%', height: '100%' }}
                     zoomControl={false}
-                    attributionControl
+                    attributionControl={false}
                 >
                     <TileLayer
                         url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
