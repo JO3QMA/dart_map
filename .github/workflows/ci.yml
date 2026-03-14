@@ -25,17 +25,13 @@ jobs:
         run: npm ci
 
       - name: Lint
-        run: |
-          if npm run lint -- --help > /dev/null 2>&1; then
-            npm run lint
-          else
-            echo "lint script is not defined; skipping lint step."
-          fi
+        run: npm run lint
+
+      - name: Format Check
+        run: npm run format
+
+      - name: Type Check
+        run: npm run type-check
 
       - name: Test
-        run: |
-          if npm test -- --help > /dev/null 2>&1; then
-            npm test
-          else
-            echo "test script is not defined; skipping test step."
-          fi
+        run: npm test

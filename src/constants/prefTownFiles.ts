@@ -49,9 +49,8 @@ export const PREF_CODE_TO_TOWN_SLUG: Record<string, string> = {
   '45': 'miyazaki',
   '46': 'kagoshima',
   '47': 'okinawa',
-};
-
-export function getTownSlugFromPrefCode(prefCode: string): string | undefined {
-  return PREF_CODE_TO_TOWN_SLUG[prefCode];
 }
 
+export function getTownSlugFromPrefCode(prefCode: string): string | undefined {
+  return PREF_CODE_TO_TOWN_SLUG[prefCode]
+}

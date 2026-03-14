@@ -1,5 +1,5 @@
-@import "tailwindcss";
-@import "leaflet/dist/leaflet.css";
+@import 'tailwindcss';
+@import 'leaflet/dist/leaflet.css';
 
 :root {
   --color-primary: #2563eb;
@@ -72,8 +72,12 @@ body {
    ========================================= */
 
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes fadeInUp {
@@ -88,25 +92,49 @@ body {
 }
 
 @keyframes scaleIn {
-  from { transform: scale(0.9); opacity: 0; }
-  to { transform: scale(1); opacity: 1; }
+  from {
+    transform: scale(0.9);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 
 @keyframes bounce {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-8px); }
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
 }
 
 @keyframes pulse-glow {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(14, 165, 233, 0.4); }
-  50% { box-shadow: 0 0 20px 8px rgba(14, 165, 233, 0.15); }
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(14, 165, 233, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 20px 8px rgba(14, 165, 233, 0.15);
+  }
 }
 
 @keyframes dartStick {
-  0% { transform: scale(1.2) rotate(0deg); }
-  30% { transform: scale(0.9) rotate(5deg); }
-  60% { transform: scale(1.05) rotate(-2deg); }
-  100% { transform: scale(1) rotate(0deg); }
+  0% {
+    transform: scale(1.2) rotate(0deg);
+  }
+  30% {
+    transform: scale(0.9) rotate(5deg);
+  }
+  60% {
+    transform: scale(1.05) rotate(-2deg);
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
+  }
 }
 
 @keyframes ripple {
@@ -121,8 +149,12 @@ body {
 }
 
 @keyframes shimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
 }
 
 .animate-fade-in {
@@ -212,7 +244,7 @@ body {
   background: white;
   color: var(--color-text);
   border: 2px solid #e2e8f0;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
 .btn-outline:hover {
@@ -413,9 +445,10 @@ body {
   transform-origin: center center;
   pointer-events: none;
   z-index: 20;
-  filter: drop-shadow(0 4px 8px rgba(0,0,0,0.2));
-  transition: left 0.7s cubic-bezier(0.22, 1, 0.36, 1),
-              top 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
+  transition:
+    left 0.7s cubic-bezier(0.22, 1, 0.36, 1),
+    top 0.7s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 /* クリック地点へ飛び込むダーツの飛翔アニメーション */

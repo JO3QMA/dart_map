@@ -9,7 +9,13 @@
     "build:watch": "vite build --watch",
     "preview": "vite preview",
     "generate:regions": "tsx scripts/generateRegionsFromGeolonia.ts",
-    "dev:wrangler": "npm run build && npx wrangler dev"
+    "dev:wrangler": "npm run build && npx wrangler dev",
+    "lint": "eslint .",
+    "format": "prettier --check .",
+    "format:fix": "prettier --write .",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "type-check": "tsc -b"
   },
   "dependencies": {
     "leaflet": "^1.9.4",
@@ -19,17 +25,29 @@
     "react-leaflet": "^4.2.1"
   },
   "devDependencies": {
+    "@eslint/js": "^9.39.4",
     "@tailwindcss/vite": "^4.0.0",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
     "@types/geojson": "^7946.0.15",
     "@types/leaflet": "^1.9.16",
+    "@types/node": "^22.10.1",
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",
     "@vitejs/plugin-react": "^4.3.4",
-    "@types/node": "^22.10.1",
+    "eslint": "^9.39.4",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-react-hooks": "^7.0.1",
+    "eslint-plugin-react-refresh": "^0.5.2",
+    "globals": "^17.4.0",
+    "jsdom": "^28.1.0",
+    "prettier": "^3.8.1",
     "tailwindcss": "^4.0.0",
     "ts-node": "^10.9.2",
     "tsx": "^4.19.2",
     "typescript": "~5.6.2",
-    "vite": "^6.0.0"
+    "typescript-eslint": "^8.57.0",
+    "vite": "^6.0.0",
+    "vitest": "^4.1.0"
   }
 }
