@@ -1,8 +1,14 @@
 name = "dart-map"
-main = "worker.mjs"
+main = "worker.ts"
 compatibility_date = "2025-01-01"
 
 # Serve the Vite build output (`npm run build`) as static assets
 [assets]
 directory = "dist"
+
+# Run: npx wrangler d1 create dart-map-regions  then set database_id below
+[[d1_databases]]
+binding = "DB"
+database_name = "dart-map-regions"
+database_id = "bd4a85d9-5792-45bd-a878-007e975d817f"
 
