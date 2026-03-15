@@ -1,10 +1,7 @@
 import { useState, useCallback, useEffect } from "react";
 import type { Region, GameMode } from "./types";
 import { fetchRandomTarget, fetchRegions } from "./services/dataService";
-import {
-  parseResultFromSearch,
-  getResultShareUrl,
-} from "./utils/shareUrl";
+import { parseResultFromSearch, getResultShareUrl } from "./utils/shareUrl";
 import Header from "./components/Header";
 import RegionSelector from "./components/RegionSelector";
 import InteractiveMap from "./components/InteractiveMap";

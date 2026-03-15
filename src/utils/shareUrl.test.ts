@@ -86,9 +86,21 @@ describe("parseResultFromSearch", () => {
   });
 
   it("returns null when required param is missing", () => {
-    expect(parseResultFromSearch("?id=13&type=prefecture&lat=35.68&lng=139.69&mode=country")).toBeNull();
-    expect(parseResultFromSearch("?id=13&type=prefecture&name=Tokyo&lng=139.69&mode=country")).toBeNull();
-    expect(parseResultFromSearch("?id=13&type=prefecture&name=Tokyo&lat=35.68&mode=country")).toBeNull();
+    expect(
+      parseResultFromSearch(
+        "?id=13&type=prefecture&lat=35.68&lng=139.69&mode=country",
+      ),
+    ).toBeNull();
+    expect(
+      parseResultFromSearch(
+        "?id=13&type=prefecture&name=Tokyo&lng=139.69&mode=country",
+      ),
+    ).toBeNull();
+    expect(
+      parseResultFromSearch(
+        "?id=13&type=prefecture&name=Tokyo&lat=35.68&mode=country",
+      ),
+    ).toBeNull();
   });
 
   it("returns null when lat or lng is not a finite number", () => {
@@ -141,9 +153,7 @@ describe("parseResultFromSearch", () => {
       expect(parsed!.selectedPrefecture ?? null).toBe(
         payload.selectedPrefecture ?? null,
       );
-      expect(parsed!.selectedCity ?? null).toBe(
-        payload.selectedCity ?? null,
-      );
+      expect(parsed!.selectedCity ?? null).toBe(payload.selectedCity ?? null);
     }
   });
 });
