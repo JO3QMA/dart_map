@@ -5,6 +5,7 @@ import Header from "./components/Header";
 import RegionSelector from "./components/RegionSelector";
 import InteractiveMap from "./components/InteractiveMap";
 import ResultModal from "./components/ResultModal";
+import ResultBar from "./components/ResultBar";
 
 export default function App() {
   const [mode, setMode] = useState<GameMode>("country");
@@ -189,6 +190,15 @@ export default function App() {
           onMergeDesignatedCitiesChange={setMergeDesignatedCities}
         />
       </div>
+
+      {result && (
+        <ResultBar
+          result={result}
+          parentName={parentName}
+          mode={mode}
+          onDrillDown={handleDrillDown}
+        />
+      )}
 
       <footer className="pointer-events-none fixed bottom-0 left-0 w-full z-[1000] bg-white/75 backdrop-blur-md px-4 py-1.5">
         <div className="pointer-events-auto flex w-full flex-wrap items-center justify-center gap-x-3 gap-y-1 text-[11px] text-gray-500">
