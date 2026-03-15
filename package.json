@@ -11,7 +11,7 @@
     "fmt": "npm run format",
     "test": "vitest",
     "test:run": "vitest run",
-    "build": "npm run generate:seed && tsc -b && vite build",
+    "build": "tsc -b && vite build",
     "build:watch": "vite build --watch",
     "preview": "vite preview",
     "generate:seed": "tsx scripts/generateRegionsFromGeolonia.ts",

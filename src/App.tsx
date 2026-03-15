@@ -5,6 +5,7 @@ import Header from "./components/Header";
 import RegionSelector from "./components/RegionSelector";
 import InteractiveMap from "./components/InteractiveMap";
 import ResultModal from "./components/ResultModal";
+import ResultBar from "./components/ResultBar";
 
 export default function App() {
   const [mode, setMode] = useState<GameMode>("country");
@@ -161,8 +162,8 @@ export default function App() {
   }, []);
 
   return (
-    <div className="app-root">
-      <div className="map-layer">
+    <div className="relative w-screen h-screen overflow-hidden">
+      <div className="absolute inset-0 z-[1]" data-map-layer>
         <InteractiveMap
           isAnimating={isAnimating}
           onThrow={handleThrow}
@@ -177,7 +178,7 @@ export default function App() {
 
       <Header />
 
-      <div className="floating-panel">
+      <div className="absolute top-[104px] left-5 z-[1000] max-sm:left-5 max-sm:right-5 max-sm:w-[calc(100%-2.5rem)]">
         <RegionSelector
           mode={mode}
           onModeChange={setMode}
@@ -189,6 +190,15 @@ export default function App() {
           onMergeDesignatedCitiesChange={setMergeDesignatedCities}
         />
       </div>
+
+      {result && (
+        <ResultBar
+          result={result}
+          parentName={parentName}
+          mode={mode}
+          onDrillDown={handleDrillDown}
+        />
+      )}
 
       <footer className="pointer-events-none fixed bottom-0 left-0 w-full z-[1000] bg-white/75 backdrop-blur-md px-4 py-1.5">
         <div className="pointer-events-auto flex w-full flex-wrap items-center justify-center gap-x-3 gap-y-1 text-[11px] text-gray-500">
