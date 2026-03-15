@@ -62,7 +62,7 @@ npm run dev:wrangler
 | コマンド                | 説明                                                                                         |
 | ----------------------- | -------------------------------------------------------------------------------------------- |
 | `npm run dev`           | Vite のみでフロント開発（API は別途 Worker が必要）                                          |
-| `npm run build`         | シード生成 ＋ TypeScript ビルド ＋ Vite ビルド                                               |
+| `npm run build`         | TypeScript ビルド ＋ Vite ビルド（デプロイ時はシード生成は行わない。必要なら手動で `npm run generate:seed` を実行） |
 | `npm run generate:seed` | `scripts/seed.sql` を再生成（上書き時は `FORCE_REGENERATE_REGIONS=1 npm run generate:seed`） |
 | `npm run dev:wrangler`  | ビルド後に Wrangler 開発サーバー起動（推奨）                                                 |
 
