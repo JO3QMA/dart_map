@@ -19,34 +19,49 @@ export default function App() {
   const [mergeDesignatedCities, setMergeDesignatedCities] =
     useState<boolean>(false);
 
-  const [prefectureName, setPrefectureName] = useState<string>("");
-  const [cityName, setCityName] = useState<string>("");
+  const [fetchedPrefectureNames, setFetchedPrefectureNames] = useState<
+    Record<string, string>
+  >({});
+  const [fetchedCityNames, setFetchedCityNames] = useState<
+    Record<string, string>
+  >({});
+
+  const prefectureName = selectedPrefecture
+    ? fetchedPrefectureNames[selectedPrefecture] ?? ""
+    : "";
+  const cityName =
+    !selectedCity || !selectedPrefecture
+      ? ""
+      : selectedCity.startsWith("DC-")
+        ? selectedCity.split("-").slice(2).join("-")
+        : fetchedCityNames[selectedCity] ?? "";
 
   useEffect(() => {
-    if (selectedPrefecture) {
-      fetchRegions("prefecture").then((regions) => {
-        const found = regions.find((r) => r.id === selectedPrefecture);
-        setPrefectureName(found?.name ?? "");
-      });
-    } else {
-      setPrefectureName("");
-    }
+    if (!selectedPrefecture) return;
+    fetchRegions("prefecture").then((regions) => {
+      const found = regions.find((r) => r.id === selectedPrefecture);
+      setFetchedPrefectureNames((prev) => ({
+        ...prev,
+        [selectedPrefecture]: found?.name ?? "",
+      }));
+    });
   }, [selectedPrefecture]);
 
   useEffect(() => {
-    if (selectedCity && selectedPrefecture) {
-      if (selectedCity.startsWith("DC-")) {
-        const parts = selectedCity.split("-").slice(2);
-        setCityName(parts.join("-") ?? "");
-        return;
-      }
-      fetchRegions("city", selectedPrefecture).then((regions) => {
-        const found = regions.find((r) => r.id === selectedCity);
-        setCityName(found?.name ?? "");
-      });
-    } else {
-      setCityName("");
+    if (
+      !selectedCity ||
+      !selectedPrefecture ||
+      selectedCity.startsWith("DC-")
+    ) {
+      return;
     }
+    fetchRegions("city", selectedPrefecture).then((regions) => {
+      const found = regions.find((r) => r.id === selectedCity);
+      setFetchedCityNames((prev) => ({
+        ...prev,
+        [selectedCity]: found?.name ?? "",
+      }));
+    });
   }, [selectedCity, selectedPrefecture]);
 
   const getParentId = useCallback((): string | undefined => {
