@@ -31,20 +31,28 @@ export default function RegionSelector({
   onMergeDesignatedCitiesChange,
 }: RegionSelectorProps) {
   const [prefectures, setPrefectures] = useState<Region[]>([]);
-  const [cities, setCities] = useState<Region[]>([]);
+  const [citiesByPrefecture, setCitiesByPrefecture] = useState<
+    Record<string, Region[]>
+  >({});
+
+  const cities = selectedPrefecture
+    ? (citiesByPrefecture[selectedPrefecture] ?? [])
+    : [];
 
   useEffect(() => {
     fetchRegions("prefecture").then(setPrefectures);
   }, []);
 
   useEffect(() => {
-    if (selectedPrefecture) {
-      fetchRegions("city", selectedPrefecture, mergeDesignatedCities).then(
-        setCities,
-      );
-    } else {
-      setCities([]);
-    }
+    if (!selectedPrefecture) return;
+    fetchRegions("city", selectedPrefecture, mergeDesignatedCities).then(
+      (regions) => {
+        setCitiesByPrefecture((prev) => ({
+          ...prev,
+          [selectedPrefecture]: regions,
+        }));
+      },
+    );
   }, [selectedPrefecture, mergeDesignatedCities]);
 
   const handleModeChange = (newMode: GameMode) => {

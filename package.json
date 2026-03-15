@@ -29,7 +29,7 @@
     "@eslint/js": "^10.0.1",
     "eslint": "^9.15.0",
     "eslint-plugin-react": "^7.37.0",
-    "eslint-plugin-react-hooks": "^5.0.0",
+    "eslint-plugin-react-hooks": "^7.0.1",
     "typescript-eslint": "^8.15.0",
     "prettier": "^3.4.2",
     "@testing-library/dom": "^10.4.1",
