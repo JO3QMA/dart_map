@@ -27,14 +27,14 @@ export default function App() {
   >({});
 
   const prefectureName = selectedPrefecture
-    ? fetchedPrefectureNames[selectedPrefecture] ?? ""
+    ? (fetchedPrefectureNames[selectedPrefecture] ?? "")
     : "";
   const cityName =
     !selectedCity || !selectedPrefecture
       ? ""
       : selectedCity.startsWith("DC-")
         ? selectedCity.split("-").slice(2).join("-")
-        : fetchedCityNames[selectedCity] ?? "";
+        : (fetchedCityNames[selectedCity] ?? "");
 
   useEffect(() => {
     if (!selectedPrefecture) return;

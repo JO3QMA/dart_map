@@ -36,7 +36,7 @@ export default function RegionSelector({
   >({});
 
   const cities = selectedPrefecture
-    ? citiesByPrefecture[selectedPrefecture] ?? []
+    ? (citiesByPrefecture[selectedPrefecture] ?? [])
     : [];
 
   useEffect(() => {
