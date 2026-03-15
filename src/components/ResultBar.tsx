@@ -50,7 +50,7 @@ export default function ResultBar({
               onClick={() => onDrillDown(nextMode, result.id)}
             >
               <ChevronRight className="w-3.5 h-3.5 shrink-0" />
-              下位を探索
+              さらに探索する
             </button>
           )}
         </div>
