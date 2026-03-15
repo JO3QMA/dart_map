@@ -162,8 +162,11 @@ export default function App() {
   }, []);
 
   return (
-    <div className="app-root">
-      <div className="map-layer">
+    <div className="relative w-screen h-screen overflow-hidden">
+      <div
+        className="absolute inset-0 z-[1]"
+        data-map-layer
+      >
         <InteractiveMap
           isAnimating={isAnimating}
           onThrow={handleThrow}
@@ -178,7 +181,7 @@ export default function App() {
 
       <Header />
 
-      <div className="floating-panel">
+      <div className="absolute top-[104px] left-5 z-[1000] max-sm:left-5 max-sm:right-5 max-sm:w-[calc(100%-2.5rem)]">
         <RegionSelector
           mode={mode}
           onModeChange={setMode}

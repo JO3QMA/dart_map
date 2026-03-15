@@ -1,7 +1,7 @@
 @import "tailwindcss";
 @import "leaflet/dist/leaflet.css";
 
-:root {
+@theme {
   --color-primary: #2563eb;
   --color-primary-dark: #1d4ed8;
   --color-accent: #f43f5e;
@@ -18,47 +18,37 @@
   --shadow-soft: 0 18px 40px -24px rgba(15, 23, 42, 0.28);
   --font-display: "Outfit", "Noto Sans JP", sans-serif;
   --font-body: "Noto Sans JP", "Outfit", sans-serif;
+  --animate-fade-in: fadeIn 0.3s ease-out forwards;
+  --animate-fade-in-up: fadeInUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  --animate-scale-in: scaleIn 0.3s ease-out forwards;
+  --animate-bounce-subtle: bounce 2s ease-in-out infinite;
+  --animate-dart-stick: dartStick 0.3s ease-out forwards;
+  --animate-pulse-glow: pulse-glow 2s ease-in-out infinite;
 }
 
-html {
-  scroll-behavior: smooth;
-  overflow: hidden;
-}
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    overflow: hidden;
+  }
 
-body {
-  margin: 0;
-  padding: 0;
-  font-family: var(--font-body);
-  background: var(--color-bg);
-  color: var(--color-text);
-  height: 100vh;
-  width: 100vw;
-  overflow: hidden;
-}
+  body {
+    margin: 0;
+    padding: 0;
+    font-family: var(--font-body);
+    background: var(--color-bg);
+    color: var(--color-text);
+    height: 100vh;
+    width: 100vw;
+    overflow: hidden;
+  }
 
-#root {
-  position: relative;
-  height: 100vh;
-  width: 100vw;
-  overflow: hidden;
-}
-
-/* アプリ最外枠：フルスクリーン・スクロール禁止（Tailwindに依存しない） */
-.app-root {
-  position: relative;
-  margin: 0;
-  padding: 0;
-  width: 100vw;
-  height: 100vh;
-  overflow: hidden;
-}
-
-/* 操作パネル：地図上にオーバーレイ（PC） */
-.floating-panel {
-  position: absolute;
-  top: 104px;
-  left: 20px;
-  z-index: 1000;
+  #root {
+    position: relative;
+    height: 100vh;
+    width: 100vw;
+    overflow: hidden;
+  }
 }
 
 /* =========================================
@@ -151,35 +141,12 @@ body {
   }
 }
 
-.animate-fade-in {
-  animation: fadeIn 0.3s ease-out forwards;
-}
+@layer components {
+  /* =========================================
+     Button Base
+     ========================================= */
 
-.animate-fade-in-up {
-  animation: fadeInUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-
-.animate-scale-in {
-  animation: scaleIn 0.3s ease-out forwards;
-}
-
-.animate-bounce-subtle {
-  animation: bounce 2s ease-in-out infinite;
-}
-
-.animate-dart-stick {
-  animation: dartStick 0.3s ease-out forwards;
-}
-
-.animate-pulse-glow {
-  animation: pulse-glow 2s ease-in-out infinite;
-}
-
-/* =========================================
-   Button Base
-   ========================================= */
-
-.btn {
+  .btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -388,30 +355,15 @@ body {
    Map Area / Fullscreen map layer
    ========================================= */
 
-.map-layer {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  z-index: 1;
-}
-
-/* 地図コンポーネントのルートを常に親いっぱいに（Tailwindに依存しない） */
-.map-layer > * {
-  position: relative;
-  width: 100%;
-  height: 100%;
-}
-
-.map-layer .map-area {
+/* 地図フルスクリーンラッパーは App.tsx で absolute inset-0 z-[1]。子は data-map-layer で識別 */
+[data-map-layer] .map-area {
   min-height: 0;
   border-radius: 0;
   border: none;
   box-shadow: none;
 }
 
-.map-layer .map-area:hover {
+[data-map-layer] .map-area:hover {
   box-shadow: none;
 }
 
@@ -438,11 +390,11 @@ body {
     inset 0 1px 0 rgba(255, 255, 255, 0.75);
 }
 
-/* Leaflet dart marker (🎯) */
-.dart-marker {
-  background: transparent;
-  border: none;
-  box-shadow: none;
+/* Leaflet dart marker (🎯) - Leaflet の .leaflet-div-icon の background/border を上書き */
+.map-area .leaflet-div-icon.dart-marker {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
 }
 
 /* =========================================
@@ -598,16 +550,9 @@ body {
 @media (max-width: 640px) {
   html,
   body,
-  #root,
-  .app-root {
+  #root {
     height: 100dvh;
     min-height: 100vh;
-  }
-
-  .floating-panel {
-    left: 20px;
-    right: 20px;
-    width: calc(100% - 40px);
   }
 
   .segmented-control {
@@ -640,5 +585,6 @@ body {
   .select-styled {
     min-width: 140px;
     font-size: 0.8125rem;
+  }
   }
 }
