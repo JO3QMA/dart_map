@@ -587,6 +587,16 @@ body {
   box-shadow: 0 4px 10px rgba(139, 92, 246, 0.3);
 }
 
+.sns-btn-mastodon {
+  background: linear-gradient(135deg, #6364ff, #5950e6);
+  box-shadow: 0 4px 10px rgba(99, 100, 255, 0.3);
+}
+
+.sns-btn-misskey {
+  background: linear-gradient(135deg, #86b300, #6d9200);
+  box-shadow: 0 4px 10px rgba(134, 179, 0, 0.3);
+}
+
 /* =========================================
    Responsive
    ========================================= */
