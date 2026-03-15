@@ -1,37 +1,37 @@
 // scripts/generateRegionsFromGeolonia.ts
 // Geolonia API から地域データを取得し、D1 用 seed.sql を生成する
 
-import * as fs from 'fs';
-import * as path from 'path';
-import https from 'https';
-import type { Region } from '../src/types';
+import * as fs from "fs";
+import * as path from "path";
+import https from "https";
+import type { Region } from "../src/types";
 
-type RegionType = Region['type'];
+type RegionType = Region["type"];
 
 const DESIGNATED_CITIES: { name: string; prefix: string }[] = [
-  { name: '札幌市', prefix: '札幌市' },
-  { name: '仙台市', prefix: '仙台市' },
-  { name: 'さいたま市', prefix: 'さいたま市' },
-  { name: '千葉市', prefix: '千葉市' },
-  { name: '横浜市', prefix: '横浜市' },
-  { name: '川崎市', prefix: '川崎市' },
-  { name: '相模原市', prefix: '相模原市' },
-  { name: '新潟市', prefix: '新潟市' },
-  { name: '静岡市', prefix: '静岡市' },
-  { name: '浜松市', prefix: '浜松市' },
-  { name: '名古屋市', prefix: '名古屋市' },
-  { name: '京都市', prefix: '京都市' },
-  { name: '大阪市', prefix: '大阪市' },
-  { name: '堺市', prefix: '堺市' },
-  { name: '神戸市', prefix: '神戸市' },
-  { name: '岡山市', prefix: '岡山市' },
-  { name: '広島市', prefix: '広島市' },
-  { name: '北九州市', prefix: '北九州市' },
-  { name: '福岡市', prefix: '福岡市' },
-  { name: '熊本市', prefix: '熊本市' },
+  { name: "札幌市", prefix: "札幌市" },
+  { name: "仙台市", prefix: "仙台市" },
+  { name: "さいたま市", prefix: "さいたま市" },
+  { name: "千葉市", prefix: "千葉市" },
+  { name: "横浜市", prefix: "横浜市" },
+  { name: "川崎市", prefix: "川崎市" },
+  { name: "相模原市", prefix: "相模原市" },
+  { name: "新潟市", prefix: "新潟市" },
+  { name: "静岡市", prefix: "静岡市" },
+  { name: "浜松市", prefix: "浜松市" },
+  { name: "名古屋市", prefix: "名古屋市" },
+  { name: "京都市", prefix: "京都市" },
+  { name: "大阪市", prefix: "大阪市" },
+  { name: "堺市", prefix: "堺市" },
+  { name: "神戸市", prefix: "神戸市" },
+  { name: "岡山市", prefix: "岡山市" },
+  { name: "広島市", prefix: "広島市" },
+  { name: "北九州市", prefix: "北九州市" },
+  { name: "福岡市", prefix: "福岡市" },
+  { name: "熊本市", prefix: "熊本市" },
 ];
 
-const JA_JSON_URL = 'https://geolonia.github.io/japanese-addresses/api/ja.json';
+const JA_JSON_URL = "https://geolonia.github.io/japanese-addresses/api/ja.json";
 
 type JaJson = Record<string, string[]>;
 
@@ -55,10 +55,10 @@ function fetchJson<T>(url: string): Promise<T> {
         }
 
         const chunks: Buffer[] = [];
-        res.on('data', (c) => chunks.push(c));
-        res.on('end', () => {
+        res.on("data", (c) => chunks.push(c));
+        res.on("end", () => {
           try {
-            const text = Buffer.concat(chunks).toString('utf8');
+            const text = Buffer.concat(chunks).toString("utf8");
             const json = JSON.parse(text) as T;
             resolve(json);
           } catch (e) {
@@ -66,14 +66,17 @@ function fetchJson<T>(url: string): Promise<T> {
           }
         });
       })
-      .on('error', (err) => reject(err));
+      .on("error", (err) => reject(err));
   });
 }
 
 async function fetchCityData(
   prefName: string,
   cityName: string,
-): Promise<{ cityPoint: CityPoint | null; townPoints: Map<string, TownPoint> }> {
+): Promise<{
+  cityPoint: CityPoint | null;
+  townPoints: Map<string, TownPoint>;
+}> {
   const url = `https://geolonia.github.io/japanese-addresses/api/ja/${encodeURIComponent(
     prefName,
   )}/${encodeURIComponent(cityName)}.json`;
@@ -100,14 +103,14 @@ async function fetchCityData(
     const townPoints = new Map<string, TownPoint>();
 
     for (const r of rows) {
-      if (typeof r.lat !== 'number' || typeof r.lng !== 'number') continue;
+      if (typeof r.lat !== "number" || typeof r.lng !== "number") continue;
 
       cityLatSum += r.lat;
       cityLngSum += r.lng;
       cityCount += 1;
 
-      const townName = (r.town ?? '').trim();
-      const koazaName = (r.koaza ?? '').trim();
+      const townName = (r.town ?? "").trim();
+      const koazaName = (r.koaza ?? "").trim();
       const key = koazaName ? `${townName} ${koazaName}` : townName;
       if (!key) continue;
 
@@ -130,7 +133,10 @@ async function fetchCityData(
 
     return { cityPoint, townPoints };
   } catch (e) {
-    console.error(`Failed to fetch city data for ${prefName} / ${cityName}:`, e);
+    console.error(
+      `Failed to fetch city data for ${prefName} / ${cityName}:`,
+      e,
+    );
     return { cityPoint: null, townPoints: new Map() };
   }
 }
@@ -139,7 +145,9 @@ function buildDesignatedCities(cities: Region[]): Region[] {
   const result: Region[] = [];
 
   for (const def of DESIGNATED_CITIES) {
-    const wards = cities.filter((c) => c.name.startsWith(def.prefix) && c.name !== def.name);
+    const wards = cities.filter(
+      (c) => c.name.startsWith(def.prefix) && c.name !== def.name,
+    );
     if (!wards.length) continue;
 
     const lat = wards.reduce((s, w) => s + w.coordinate.lat, 0) / wards.length;
@@ -148,7 +156,7 @@ function buildDesignatedCities(cities: Region[]): Region[] {
 
     result.push({
       id: `DC-${prefId}-${def.prefix}`,
-      type: 'city',
+      type: "city",
       name: def.name,
       coordinate: { lat, lng },
       parentId: prefId,
@@ -158,8 +166,12 @@ function buildDesignatedCities(cities: Region[]): Region[] {
   return result;
 }
 
-async function buildRegionsFromApi(): Promise<{ prefectures: Region[]; cities: Region[]; towns: Region[] }> {
-  console.log('Fetching ja.json ...');
+async function buildRegionsFromApi(): Promise<{
+  prefectures: Region[];
+  cities: Region[];
+  towns: Region[];
+}> {
+  console.log("Fetching ja.json ...");
   const ja = await fetchJson<JaJson>(JA_JSON_URL);
 
   const prefectureNames = Object.keys(ja);
@@ -172,16 +184,18 @@ async function buildRegionsFromApi(): Promise<{ prefectures: Region[]; cities: R
   for (let i = 0; i < prefectureNames.length; i++) {
     const prefName = prefectureNames[i];
 
-    const prefId = String(i + 1).padStart(2, '0');
+    const prefId = String(i + 1).padStart(2, "0");
 
     const cityNames = ja[prefName] ?? [];
-    console.log(`Processing ${prefName} (${prefId}) with ${cityNames.length} cities...`);
+    console.log(
+      `Processing ${prefName} (${prefId}) with ${cityNames.length} cities...`,
+    );
 
     const cityPoints: CityPoint[] = [];
 
     for (let j = 0; j < cityNames.length; j++) {
       const cityName = cityNames[j];
-      const cityId = prefId + String(j + 1).padStart(3, '0');
+      const cityId = prefId + String(j + 1).padStart(3, "0");
 
       const { cityPoint, townPoints } = await fetchCityData(prefName, cityName);
       if (!cityPoint) {
@@ -191,7 +205,7 @@ async function buildRegionsFromApi(): Promise<{ prefectures: Region[]; cities: R
 
       cities.push({
         id: cityId,
-        type: 'city' as RegionType,
+        type: "city" as RegionType,
         name: cityName,
         coordinate: cityPoint,
         parentId: prefId,
@@ -202,11 +216,11 @@ async function buildRegionsFromApi(): Promise<{ prefectures: Region[]; cities: R
       let townIndex = 0;
       for (const [name, point] of townPoints.entries()) {
         townIndex += 1;
-        const townId = `${cityId}-${String(townIndex).padStart(4, '0')}`;
+        const townId = `${cityId}-${String(townIndex).padStart(4, "0")}`;
 
         towns.push({
           id: townId,
-          type: 'town',
+          type: "town",
           name,
           coordinate: point,
           parentId: cityId,
@@ -221,16 +235,18 @@ async function buildRegionsFromApi(): Promise<{ prefectures: Region[]; cities: R
 
       prefectures.push({
         id: prefId,
-        type: 'prefecture',
+        type: "prefecture",
         name: prefName,
         coordinate: {
           lat: latSum / count,
           lng: lngSum / count,
         },
-        parentId: 'JP',
+        parentId: "JP",
       });
     } else {
-      console.warn(`  [skip] no cities with points for prefecture: ${prefName}`);
+      console.warn(
+        `  [skip] no cities with points for prefecture: ${prefName}`,
+      );
     }
   }
 
@@ -243,7 +259,7 @@ async function buildRegionsFromApi(): Promise<{ prefectures: Region[]; cities: R
 
 // --- SQL 出力（単一ファイル） ---
 
-const SEED_SQL_PATH = path.resolve(process.cwd(), 'scripts', 'seed.sql');
+const SEED_SQL_PATH = path.resolve(process.cwd(), "scripts", "seed.sql");
 
 function escapeSql(str: string): string {
   return str.replace(/'/g, "''");
@@ -251,64 +267,78 @@ function escapeSql(str: string): string {
 
 function regionToValues(r: Region): string {
   const parentId = r.parentId ?? null;
-  const parentStr = parentId === null ? 'NULL' : `'${escapeSql(parentId)}'`;
+  const parentStr = parentId === null ? "NULL" : `'${escapeSql(parentId)}'`;
   return `('${escapeSql(r.id)}','${escapeSql(r.type)}','${escapeSql(r.name)}',${r.coordinate.lat},${r.coordinate.lng},${parentStr})`;
 }
 
 function buildSeedSql(allRegions: Region[], batchSize: number): string {
   const lines: string[] = [];
 
-  lines.push('-- D1 regions seed (generated by scripts/generateRegionsFromGeolonia.ts)');
-  lines.push('CREATE TABLE IF NOT EXISTS regions (');
-  lines.push('  id TEXT PRIMARY KEY,');
-  lines.push('  type TEXT NOT NULL,');
-  lines.push('  name TEXT NOT NULL,');
-  lines.push('  lat REAL NOT NULL,');
-  lines.push('  lng REAL NOT NULL,');
-  lines.push('  parent_id TEXT');
-  lines.push(');');
-  lines.push('');
-  lines.push('CREATE INDEX IF NOT EXISTS idx_regions_type_parent_id ON regions(type, parent_id);');
-  lines.push('');
+  lines.push(
+    "-- D1 regions seed (generated by scripts/generateRegionsFromGeolonia.ts)",
+  );
+  lines.push("CREATE TABLE IF NOT EXISTS regions (");
+  lines.push("  id TEXT PRIMARY KEY,");
+  lines.push("  type TEXT NOT NULL,");
+  lines.push("  name TEXT NOT NULL,");
+  lines.push("  lat REAL NOT NULL,");
+  lines.push("  lng REAL NOT NULL,");
+  lines.push("  parent_id TEXT");
+  lines.push(");");
+  lines.push("");
+  lines.push(
+    "CREATE INDEX IF NOT EXISTS idx_regions_type_parent_id ON regions(type, parent_id);",
+  );
+  lines.push("");
 
   for (let i = 0; i < allRegions.length; i += batchSize) {
     const batch = allRegions.slice(i, i + batchSize);
-    const values = batch.map(regionToValues).join(',\n  ');
-    lines.push('INSERT OR REPLACE INTO regions (id, type, name, lat, lng, parent_id) VALUES');
-    lines.push('  ' + values + ';');
-    lines.push('');
+    const values = batch.map(regionToValues).join(",\n  ");
+    lines.push(
+      "INSERT OR REPLACE INTO regions (id, type, name, lat, lng, parent_id) VALUES",
+    );
+    lines.push("  " + values + ";");
+    lines.push("");
   }
 
-  return lines.join('\n');
+  return lines.join("\n");
 }
 
 async function main() {
-  const force = process.env.FORCE_REGENERATE_REGIONS === '1';
+  const force = process.env.FORCE_REGENERATE_REGIONS === "1";
 
   if (!force && fs.existsSync(SEED_SQL_PATH)) {
     console.log(
-      'scripts/seed.sql already exists. Skipping generation. (set FORCE_REGENERATE_REGIONS=1 to force)',
+      "scripts/seed.sql already exists. Skipping generation. (set FORCE_REGENERATE_REGIONS=1 to force)",
     );
     return;
   }
 
   const { prefectures, cities, towns } = await buildRegionsFromApi();
 
-  console.log(`Built ${prefectures.length} prefectures, ${cities.length} cities, ${towns.length} towns.`);
+  console.log(
+    `Built ${prefectures.length} prefectures, ${cities.length} cities, ${towns.length} towns.`,
+  );
 
   const designatedCities = buildDesignatedCities(cities);
-  console.log(`Built ${designatedCities.length} designated city aggregate records.`);
+  console.log(
+    `Built ${designatedCities.length} designated city aggregate records.`,
+  );
 
   const allRegions = [...prefectures, ...cities, ...towns, ...designatedCities];
   const sql = buildSeedSql(allRegions, 500);
-  fs.writeFileSync(SEED_SQL_PATH, sql, 'utf8');
+  fs.writeFileSync(SEED_SQL_PATH, sql, "utf8");
 
-  console.log('Written scripts/seed.sql');
-  console.log('  Local:  npx wrangler d1 execute dart-map-regions --local --file=./scripts/seed.sql');
-  console.log('  Remote: npx wrangler d1 execute dart-map-regions --remote --file=./scripts/seed.sql');
+  console.log("Written scripts/seed.sql");
+  console.log(
+    "  Local:  npx wrangler d1 execute dart-map-regions --local --file=./scripts/seed.sql",
+  );
+  console.log(
+    "  Remote: npx wrangler d1 execute dart-map-regions --remote --file=./scripts/seed.sql",
+  );
 }
 
 main().catch((err) => {
-  console.error('Error while generating seed from Geolonia API:', err);
+  console.error("Error while generating seed from Geolonia API:", err);
   process.exitCode = 1;
 });

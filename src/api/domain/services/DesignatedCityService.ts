@@ -1,31 +1,31 @@
-import type { Region } from '../models/Region';
+import type { Region } from "../models/Region";
 
 /** 政令指定都市の名称リスト（区をまとめる際の判定に使用） */
 export const DESIGNATED_CITY_NAMES: string[] = [
-  '札幌市',
-  '仙台市',
-  'さいたま市',
-  '千葉市',
-  '横浜市',
-  '川崎市',
-  '相模原市',
-  '新潟市',
-  '静岡市',
-  '浜松市',
-  '名古屋市',
-  '京都市',
-  '大阪市',
-  '堺市',
-  '神戸市',
-  '岡山市',
-  '広島市',
-  '北九州市',
-  '福岡市',
-  '熊本市',
+  "札幌市",
+  "仙台市",
+  "さいたま市",
+  "千葉市",
+  "横浜市",
+  "川崎市",
+  "相模原市",
+  "新潟市",
+  "静岡市",
+  "浜松市",
+  "名古屋市",
+  "京都市",
+  "大阪市",
+  "堺市",
+  "神戸市",
+  "岡山市",
+  "広島市",
+  "北九州市",
+  "福岡市",
+  "熊本市",
 ];
 
 export function isDesignatedCityId(id: string): boolean {
-  return id.startsWith('DC-');
+  return id.startsWith("DC-");
 }
 
 /**
@@ -35,8 +35,8 @@ export function isDesignatedCityId(id: string): boolean {
  */
 export function getWardFilter(designatedCityId: string): string | null {
   if (!isDesignatedCityId(designatedCityId)) return null;
-  const parts = designatedCityId.split('-').slice(2);
-  const cityName = parts.join('-');
+  const parts = designatedCityId.split("-").slice(2);
+  const cityName = parts.join("-");
   return DESIGNATED_CITY_NAMES.includes(cityName) ? cityName : null;
 }
 
@@ -57,6 +57,6 @@ export function mergeCitiesWithDesignated(
   });
 
   return [...filteredCities, ...designated].sort((a, b) =>
-    a.name.localeCompare(b.name, 'ja'),
+    a.name.localeCompare(b.name, "ja"),
   );
 }
