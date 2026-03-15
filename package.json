@@ -36,7 +36,7 @@
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.0.1",
     "jsdom": "^25.0.1",
-    "vitest": "^2.1.6",
+    "vitest": "^4.1.0",
     "wrangler": "latest",
     "@tailwindcss/vite": "^4.0.0",
     "@types/geojson": "^7946.0.15",

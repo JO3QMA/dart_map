@@ -76,3 +76,12 @@ npm run dev:wrangler
 - ライセンス: [Creative Commons Attribution 4.0 International (CC BY 4.0)](https://creativecommons.org/licenses/by/4.0/)
 
 利用にあたっては、上記ライセンスおよび Geolonia の利用規約に従っています。
+
+---
+
+### シェアボタンで使用しているロゴについて
+
+結果のシェアボタンでは、Mastodon および Misskey のロゴを使用しています。  
+公式の入手先・ライセンス（利用規約）および本アプリでの利用方針については、次のドキュメントを参照してください。
+
+- **[docs/share-buttons-logos.md](docs/share-buttons-logos.md)** — ロゴの公式配布元、許可・禁止事項、実装時の配慮
