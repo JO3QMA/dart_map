@@ -1,11 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Globe, MapPin, Building2 } from 'lucide-react'
 import type { GameMode, Region } from '../types'
-import {
-  fetchRegions,
-  fetchDesignatedCities,
-  mergeCitiesWithDesignated,
-} from '../services/dataService'
+import { fetchRegions } from '../services/dataService'
 
 interface RegionSelectorProps {
   mode: GameMode
@@ -36,50 +32,19 @@ export default function RegionSelector({
 }: RegionSelectorProps) {
   const [prefectures, setPrefectures] = useState<Region[]>([])
   const [cities, setCities] = useState<Region[]>([])
-  const [displayCities, setDisplayCities] = useState<Region[]>([])
 
-  // Load prefectures
   useEffect(() => {
     fetchRegions('prefecture').then(setPrefectures)
   }, [])
 
-  // Load cities when prefecture changes
   useEffect(() => {
     if (selectedPrefecture) {
-      fetchRegions('city', selectedPrefecture).then(setCities)
+      fetchRegions('city', selectedPrefecture, mergeDesignatedCities).then(setCities)
     } else {
       setCities([])
     }
-  }, [selectedPrefecture])
+  }, [selectedPrefecture, mergeDesignatedCities])
 
-  // Build displayCities depending on mergeDesignatedCities toggle
-  useEffect(() => {
-    if (!selectedPrefecture) {
-      setDisplayCities([])
-      return
-    }
-
-    if (!mergeDesignatedCities) {
-      setDisplayCities(cities)
-      return
-    }
-
-    let cancelled = false
-
-    ;(async () => {
-      const designated = await fetchDesignatedCities(selectedPrefecture)
-      if (cancelled) return
-
-      const merged = mergeCitiesWithDesignated(cities, designated)
-      setDisplayCities(merged)
-    })()
-
-    return () => {
-      cancelled = true
-    }
-  }, [cities, mergeDesignatedCities, selectedPrefecture])
-
-  // Reset selections when mode changes
   const handleModeChange = (newMode: GameMode) => {
     onModeChange(newMode)
     if (newMode === 'country') {
@@ -93,7 +58,6 @@ export default function RegionSelector({
 
   return (
     <div className="glass-card glass-card-floating flex flex-col gap-4 px-5 py-5 sm:px-6 sm:py-5">
-      {/* Mode buttons */}
       <div className="mb-4 sm:mb-5">
         <p className="mb-3 text-sm font-semibold text-gray-600">🗺️ エリアモードを選択</p>
         <div className="segmented-control">
@@ -111,10 +75,8 @@ export default function RegionSelector({
         </div>
       </div>
 
-      {/* Prefecture + Designated city toggle + City selector grouped */}
       {(mode === 'prefecture' || mode === 'city') && (
         <div className="animate-fade-in flex flex-col gap-3">
-          {/* Prefecture selector */}
           <div className="flex flex-wrap items-center gap-3">
             <label className="text-sm font-semibold text-gray-600">📍 都道府県</label>
             <select
@@ -135,7 +97,6 @@ export default function RegionSelector({
             </select>
           </div>
 
-          {/* Designated city toggle & city selector */}
           {selectedPrefecture && (
             <div className="flex flex-col gap-3">
               <label className="flex cursor-pointer select-none items-center gap-2 px-1 py-2 text-sm text-gray-600">
@@ -158,7 +119,7 @@ export default function RegionSelector({
                     onChange={(e) => onCityChange(e.target.value || null)}
                   >
                     <option value="">選択してください</option>
-                    {displayCities.map((c) => (
+                    {cities.map((c) => (
                       <option key={c.id} value={c.id}>
                         {c.name}
                       </option>
@@ -171,7 +132,6 @@ export default function RegionSelector({
         </div>
       )}
 
-      {/* Instruction */}
       <div className="border-t border-slate-200/70 pt-3 pb-3 sm:pt-4 sm:pb-4">
         <p className="flex items-center gap-1 text-xs text-gray-600">
           <span>👆</span>
