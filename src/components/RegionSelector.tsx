@@ -67,9 +67,9 @@ export default function RegionSelector({
   };
 
   return (
-    <div className="glass-card glass-card-floating flex flex-col gap-4 px-5 py-5 sm:px-6 sm:py-5">
-      <div className="mb-4 sm:mb-5">
-        <p className="mb-3 text-sm font-semibold text-gray-600">
+    <div className="glass-card glass-card-floating flex flex-col gap-3 px-4 py-4 sm:px-5 sm:py-4">
+      <div className="mb-3 sm:mb-4">
+        <p className="mb-2 text-sm font-semibold text-gray-600">
           🗺️ エリアモードを選択
         </p>
         <div className="segmented-control">
@@ -150,7 +150,7 @@ export default function RegionSelector({
         </div>
       )}
 
-      <div className="border-t border-slate-200/70 pt-3 pb-3 sm:pt-4 sm:pb-4">
+      <div className="border-t border-slate-200/70 pt-2.5 pb-2 sm:pt-3 sm:pb-3">
         <p className="flex items-center gap-1 text-xs text-gray-600">
           <span>👆</span>
           {mode === "country"

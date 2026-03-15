@@ -48,13 +48,13 @@ export default function ResultModal({
         </button>
 
         {/* Result header */}
-        <div className="text-center mb-5">
-          <div className="text-5xl mb-3">🎯</div>
+        <div className="text-center mb-4">
+          <div className="text-4xl mb-2">🎯</div>
           <p className="text-xs font-semibold text-sky-500 uppercase tracking-wider mb-1">
             DESTINATION
           </p>
           <h2
-            className="text-2xl sm:text-3xl font-extrabold text-gray-900"
+            className="text-xl sm:text-2xl font-extrabold text-gray-900"
             style={{ fontFamily: "var(--font-display)" }}
           >
             {result.name}
@@ -68,8 +68,8 @@ export default function ResultModal({
         </div>
 
         {/* Coordinate badge */}
-        <div className="flex justify-center mb-5">
-          <span className="inline-flex items-center gap-1.5 bg-gray-50 rounded-full px-3 py-1 text-xs text-gray-500">
+        <div className="flex justify-center mb-4">
+          <span className="inline-flex items-center gap-1.5 bg-gray-50 rounded-full px-2.5 py-1 text-xs text-gray-500">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
             {result.coordinate.lat.toFixed(4)},{" "}
             {result.coordinate.lng.toFixed(4)}
@@ -77,35 +77,35 @@ export default function ResultModal({
         </div>
 
         {/* Actions */}
-        <div className="space-y-3 mb-5">
+        <div className="space-y-2 mb-4">
           {/* Google Maps button */}
           <a
             href={googleMapsUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="btn btn-emerald w-full text-base"
+            className="btn btn-emerald w-full text-sm"
             id="google-maps-btn"
           >
-            <ExternalLink className="w-4 h-4" />
+            <ExternalLink className="w-3.5 h-3.5" />
             Google マップで見る
           </a>
 
           {/* Drill down button */}
           {nextMode && (
             <button
-              className="btn btn-primary w-full text-base"
+              className="btn btn-primary w-full text-sm"
               onClick={() => onDrillDown(nextMode, result.id)}
               id="drill-down-btn"
             >
-              <ChevronRight className="w-4 h-4" />
+              <ChevronRight className="w-3.5 h-3.5" />
               {result.name}内をさらに探索する
             </button>
           )}
         </div>
 
         {/* Divider */}
-        <div className="border-t border-gray-100 pt-4">
-          <p className="text-xs text-gray-400 text-center mb-3">結果をシェア</p>
+        <div className="border-t border-gray-100 pt-3">
+          <p className="text-xs text-gray-400 text-center mb-2">結果をシェア</p>
           <ShareButtons text={shareText} />
         </div>
       </div>

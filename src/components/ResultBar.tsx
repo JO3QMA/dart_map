@@ -25,7 +25,7 @@ export default function ResultBar({
       role="region"
       aria-label="抽選結果"
     >
-      <div className="rounded-xl border border-gray-200/80 bg-white/95 shadow-lg backdrop-blur-md px-4 py-4 flex flex-col gap-4">
+      <div className="rounded-xl border border-gray-200/80 bg-white/95 shadow-lg backdrop-blur-md px-4 py-3 flex flex-col gap-3">
         <p
           className="text-sm font-semibold text-gray-900 truncate"
           title={displayName}
