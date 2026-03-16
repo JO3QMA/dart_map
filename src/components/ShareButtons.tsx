@@ -76,8 +76,8 @@ export default function ShareButtons({ text, url }: ShareButtonsProps) {
         aria-label="Mastodonで共有"
       >
         <svg
-          width="18"
-          height="18"
+          width="20"
+          height="20"
           viewBox="0 0 24 24"
           fill="currentColor"
           aria-hidden
