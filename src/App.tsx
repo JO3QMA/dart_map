@@ -188,7 +188,10 @@ export default function App() {
 
   return (
     <div className="relative w-screen h-screen overflow-hidden">
-      <div className="absolute inset-0 z-[1]" data-map-layer>
+      <div
+        className="absolute inset-0 z-[1] will-change-transform"
+        data-map-layer
+      >
         <InteractiveMap
           isAnimating={isAnimating}
           onThrow={handleThrow}
