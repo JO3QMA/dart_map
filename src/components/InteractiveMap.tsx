@@ -258,9 +258,9 @@ function MapController({
             : json;
 
         setData(filtered);
-      } catch (err) {
+      } catch {
         if (cancelled) return;
-        console.error(err);
+        console.error("Failed to fetch boundary data");
         setError("境界データの取得に失敗しました");
       } finally {
         if (!cancelled) {
@@ -309,9 +309,9 @@ function MapController({
             : json;
 
         setCityBoundary(filtered);
-      } catch (err) {
+      } catch {
         if (cancelled) return;
-        console.error(err);
+        console.error("Failed to fetch city boundary data");
       }
     };
 

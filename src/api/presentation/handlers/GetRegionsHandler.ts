@@ -36,8 +36,7 @@ export async function getRegionsHandler(c: Context<{ Bindings: Env }>) {
       "Content-Type": "application/json; charset=utf-8",
     });
   } catch (err) {
-    const message =
-      err instanceof Error ? err.message : "Internal server error";
-    return c.json({ error: message }, 500);
+    console.error("getRegionsHandler error:", err);
+    return c.json({ error: "Internal server error" }, 500);
   }
 }

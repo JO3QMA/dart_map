@@ -1,9 +1,16 @@
 import type { Context } from "hono";
 
 export async function boundaryHandler(c: Context) {
+  const MAX_QUERY_LENGTH = 200;
   const query = c.req.query("q");
   if (!query) {
     return c.json({ error: "Missing required query parameter: q" }, 400);
+  }
+  if (query.length > MAX_QUERY_LENGTH) {
+    return c.json(
+      { error: `Query parameter 'q' must be ${MAX_QUERY_LENGTH} characters or fewer` },
+      400,
+    );
   }
 
   const cache = (caches as unknown as { default: Cache }).default;
