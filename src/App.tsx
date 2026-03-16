@@ -9,15 +9,28 @@ import ResultModal from "./components/ResultModal";
 import ResultBar from "./components/ResultBar";
 
 export default function App() {
-  const [mode, setMode] = useState<GameMode>("country");
+  const [initialPayload] = useState(() => {
+    if (typeof window === "undefined") return null;
+    return parseResultFromSearch(window.location.search);
+  });
+
+  const [mode, setMode] = useState<GameMode>(initialPayload?.mode ?? "country");
   const [selectedPrefecture, setSelectedPrefecture] = useState<string | null>(
-    null,
+    initialPayload?.selectedPrefecture ?? null,
   );
-  const [selectedCity, setSelectedCity] = useState<string | null>(null);
-  const [result, setResult] = useState<Region | null>(null);
-  const [parentName, setParentName] = useState<string | undefined>(undefined);
+  const [selectedCity, setSelectedCity] = useState<string | null>(
+    initialPayload?.selectedCity ?? null,
+  );
+  const [result, setResult] = useState<Region | null>(
+    initialPayload?.result ?? null,
+  );
+  const [parentName, setParentName] = useState<string | undefined>(
+    initialPayload?.parentName,
+  );
   const [isAnimating, setIsAnimating] = useState(false);
-  const [showModal, setShowModal] = useState(false);
+  const [showModal, setShowModal] = useState<boolean>(
+    initialPayload?.result != null,
+  );
   const [mergeDesignatedCities, setMergeDesignatedCities] =
     useState<boolean>(false);
 
@@ -37,17 +50,6 @@ export default function App() {
       : selectedCity.startsWith("DC-")
         ? selectedCity.split("-").slice(2).join("-")
         : (fetchedCityNames[selectedCity] ?? "");
-
-  useEffect(() => {
-    const payload = parseResultFromSearch(window.location.search);
-    if (!payload) return;
-    setMode(payload.mode);
-    setSelectedPrefecture(payload.selectedPrefecture ?? null);
-    setSelectedCity(payload.selectedCity ?? null);
-    setResult(payload.result);
-    setParentName(payload.parentName);
-    setShowModal(true);
-  }, []);
 
   useEffect(() => {
     if (!selectedPrefecture) return;
