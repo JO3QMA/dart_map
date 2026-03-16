@@ -1,12 +1,15 @@
 import { X, MapPin, ChevronRight, ExternalLink } from "lucide-react";
 import type { Region, GameMode } from "../types";
 import { getGoogleMapsUrl, getNextMode } from "../services/dataService";
+import { getResultShareUrl } from "../utils/shareUrl";
 import ShareButtons from "./ShareButtons";
 
 interface ResultModalProps {
   result: Region;
   parentName?: string;
   mode: GameMode;
+  selectedPrefecture?: string | null;
+  selectedCity?: string | null;
   onClose: () => void;
   onDrillDown: (nextMode: GameMode, parentId: string) => void;
 }
@@ -15,6 +18,8 @@ export default function ResultModal({
   result,
   parentName,
   mode,
+  selectedPrefecture = null,
+  selectedCity = null,
   onClose,
   onDrillDown,
 }: ResultModalProps) {
@@ -24,6 +29,13 @@ export default function ResultModal({
   const nextMode = getNextMode(mode);
 
   const shareText = `🎯 ダーツの旅で「${displayName}」に当たりました！ #ダーツの旅`;
+  const resultShareUrl = getResultShareUrl({
+    result,
+    mode,
+    parentName,
+    selectedPrefecture,
+    selectedCity,
+  });
 
   const handleBackdropClick = (e: React.MouseEvent) => {
     if (e.target === e.currentTarget) {
@@ -106,7 +118,7 @@ export default function ResultModal({
         {/* Divider */}
         <div className="border-t border-gray-100 pt-3">
           <p className="text-xs text-gray-400 text-center mb-2">結果をシェア</p>
-          <ShareButtons text={shareText} />
+          <ShareButtons text={shareText} url={resultShareUrl} />
         </div>
       </div>
     </div>

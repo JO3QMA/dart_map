@@ -1,6 +1,7 @@
 import { useState, useCallback, useEffect } from "react";
 import type { Region, GameMode } from "./types";
 import { fetchRandomTarget, fetchRegions } from "./services/dataService";
+import { parseResultFromSearch, getResultShareUrl } from "./utils/shareUrl";
 import Header from "./components/Header";
 import RegionSelector from "./components/RegionSelector";
 import InteractiveMap from "./components/InteractiveMap";
@@ -36,6 +37,17 @@ export default function App() {
       : selectedCity.startsWith("DC-")
         ? selectedCity.split("-").slice(2).join("-")
         : (fetchedCityNames[selectedCity] ?? "");
+
+  useEffect(() => {
+    const payload = parseResultFromSearch(window.location.search);
+    if (!payload) return;
+    setMode(payload.mode);
+    setSelectedPrefecture(payload.selectedPrefecture ?? null);
+    setSelectedCity(payload.selectedCity ?? null);
+    setResult(payload.result);
+    setParentName(payload.parentName);
+    setShowModal(true);
+  }, []);
 
   useEffect(() => {
     if (!selectedPrefecture) return;
@@ -124,6 +136,16 @@ export default function App() {
           setParentName(parentForResult);
           setShowModal(true);
           setIsAnimating(false);
+          const url = getResultShareUrl({
+            result: selected,
+            mode,
+            parentName: parentForResult,
+            selectedPrefecture: selectedPrefecture ?? undefined,
+            selectedCity: selectedCity ?? undefined,
+          });
+          if (url) {
+            history.replaceState(null, "", url);
+          }
         }, 800);
       } catch (error) {
         console.error("Failed to fetch target:", error);
@@ -136,6 +158,7 @@ export default function App() {
       getParentId,
       resolveParentName,
       selectedPrefecture,
+      selectedCity,
       mergeDesignatedCities,
     ],
   );
@@ -259,6 +282,8 @@ export default function App() {
           result={result}
           parentName={parentName}
           mode={mode}
+          selectedPrefecture={selectedPrefecture}
+          selectedCity={selectedCity}
           onClose={handleCloseModal}
           onDrillDown={handleDrillDown}
         />
