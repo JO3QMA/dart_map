@@ -14,9 +14,7 @@ export default function App() {
     return parseResultFromSearch(window.location.search);
   });
 
-  const [mode, setMode] = useState<GameMode>(
-    initialPayload?.mode ?? "country",
-  );
+  const [mode, setMode] = useState<GameMode>(initialPayload?.mode ?? "country");
   const [selectedPrefecture, setSelectedPrefecture] = useState<string | null>(
     initialPayload?.selectedPrefecture ?? null,
   );
