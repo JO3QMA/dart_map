@@ -8,7 +8,9 @@ export async function boundaryHandler(c: Context) {
   }
   if (query.length > MAX_QUERY_LENGTH) {
     return c.json(
-      { error: `Query parameter 'q' must be ${MAX_QUERY_LENGTH} characters or fewer` },
+      {
+        error: `Query parameter 'q' must be ${MAX_QUERY_LENGTH} characters or fewer`,
+      },
       400,
     );
   }
