@@ -20,5 +20,6 @@ public/data/*.json
 public/data/*/*.json
 
 /.wrangler
+wrangler.toml
 /.playwright-mcp
 scripts/*.sql

@@ -28,6 +28,9 @@ export default function App() {
     initialPayload?.parentName,
   );
   const [isAnimating, setIsAnimating] = useState(false);
+  const [isSharedResult, setIsSharedResult] = useState<boolean>(
+    initialPayload?.result != null,
+  );
   const [showModal, setShowModal] = useState<boolean>(
     initialPayload?.result != null,
   );
@@ -111,6 +114,7 @@ export default function App() {
 
       setResult(null);
       setShowModal(false);
+      setIsSharedResult(false);
       setIsAnimating(true);
 
       try {
@@ -149,8 +153,8 @@ export default function App() {
             history.replaceState(null, "", url);
           }
         }, 800);
-      } catch (error) {
-        console.error("Failed to fetch target:", error);
+      } catch {
+        console.error("Failed to fetch target");
         setIsAnimating(false);
       }
     },
@@ -291,6 +295,7 @@ export default function App() {
           selectedCity={selectedCity}
           onClose={handleCloseModal}
           onDrillDown={handleDrillDown}
+          isSharedResult={isSharedResult}
         />
       )}
     </div>

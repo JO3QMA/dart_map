@@ -1,4 +1,4 @@
-import { X, MapPin, ChevronRight, ExternalLink } from "lucide-react";
+import { X, MapPin, ChevronRight, ExternalLink, Link } from "lucide-react";
 import type { Region, GameMode } from "../types";
 import { getGoogleMapsUrl, getNextMode } from "../services/dataService";
 import { getResultShareUrl } from "../utils/shareUrl";
@@ -12,6 +12,7 @@ interface ResultModalProps {
   selectedCity?: string | null;
   onClose: () => void;
   onDrillDown: (nextMode: GameMode, parentId: string) => void;
+  isSharedResult?: boolean;
 }
 
 export default function ResultModal({
@@ -22,6 +23,7 @@ export default function ResultModal({
   selectedCity = null,
   onClose,
   onDrillDown,
+  isSharedResult = false,
 }: ResultModalProps) {
   const displayName = parentName ? `${parentName} ${result.name}` : result.name;
 
@@ -58,6 +60,13 @@ export default function ResultModal({
         >
           <X className="w-5 h-5" />
         </button>
+
+        {isSharedResult && (
+          <div className="mb-3 flex items-center justify-center gap-1.5 rounded-lg bg-amber-50 border border-amber-200 px-3 py-2 text-xs text-amber-700">
+            <Link className="w-3.5 h-3.5 shrink-0" />
+            <span>この結果は共有リンクから読み込まれました</span>
+          </div>
+        )}
 
         {/* Result header */}
         <div className="text-center mb-4">
