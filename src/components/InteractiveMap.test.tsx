@@ -139,9 +139,7 @@ describe("InteractiveMap", () => {
 
   it("does not call onThrow when disabled", () => {
     render(<InteractiveMap {...defaultProps} disabled />);
-    expect(
-      screen.getByText("エリアを選択してください"),
-    ).toBeInTheDocument();
+    expect(screen.getByText("エリアを選択してください")).toBeInTheDocument();
 
     act(() => {
       mapClickHandler?.({
@@ -168,9 +166,7 @@ describe("InteractiveMap", () => {
 
   it("does not call onThrow while animating", () => {
     const onThrow = vi.fn();
-    render(
-      <InteractiveMap {...defaultProps} onThrow={onThrow} isAnimating />,
-    );
+    render(<InteractiveMap {...defaultProps} onThrow={onThrow} isAnimating />);
 
     act(() => {
       mapClickHandler?.({
@@ -234,7 +230,9 @@ describe("InteractiveMap", () => {
 
     await waitFor(() => {
       expect(global.fetch).toHaveBeenCalledWith(
-        expect.stringMatching(/q=.*%E6%9D%B1%E4%BA%AC%E9%83%BD.*%E5%8D%83%E4%BB%A3%E7%94%B0%E5%8C%BA/),
+        expect.stringMatching(
+          /q=.*%E6%9D%B1%E4%BA%AC%E9%83%BD.*%E5%8D%83%E4%BB%A3%E7%94%B0%E5%8C%BA/,
+        ),
       );
     });
   });
@@ -253,7 +251,9 @@ describe("InteractiveMap", () => {
 
     await waitFor(() => {
       expect(global.fetch).toHaveBeenCalledWith(
-        expect.stringMatching(/q=.*%E6%9D%B1%E4%BA%AC%E9%83%BD.*%E5%8D%83%E4%BB%A3%E7%94%B0%E5%8C%BA/),
+        expect.stringMatching(
+          /q=.*%E6%9D%B1%E4%BA%AC%E9%83%BD.*%E5%8D%83%E4%BB%A3%E7%94%B0%E5%8C%BA/,
+        ),
       );
     });
   });
@@ -285,7 +285,9 @@ describe("InteractiveMap", () => {
 
     expect(global.fetch).toHaveBeenNthCalledWith(
       2,
-      expect.stringMatching(/q=.*%E6%9D%B1%E4%BA%AC%E9%83%BD.*%E5%8D%83%E4%BB%A3%E7%94%B0%E5%8C%BA/),
+      expect.stringMatching(
+        /q=.*%E6%9D%B1%E4%BA%AC%E9%83%BD.*%E5%8D%83%E4%BB%A3%E7%94%B0%E5%8C%BA/,
+      ),
     );
   });
 
@@ -312,18 +314,16 @@ describe("InteractiveMap", () => {
 
     await waitFor(() => {
       expect(global.fetch).toHaveBeenCalledWith(
-        expect.stringMatching(/q=.*%E6%97%A5%E6%9C%AC.*%E4%BA%AC%E9%83%BD%E5%BA%9C/),
+        expect.stringMatching(
+          /q=.*%E6%97%A5%E6%9C%AC.*%E4%BA%AC%E9%83%BD%E5%BA%9C/,
+        ),
       );
     });
   });
 
   it("skips boundary fetch when query is empty", async () => {
     render(
-      <InteractiveMap
-        {...defaultProps}
-        mode="prefecture"
-        prefectureName=""
-      />,
+      <InteractiveMap {...defaultProps} mode="prefecture" prefectureName="" />,
     );
 
     await waitFor(() => {

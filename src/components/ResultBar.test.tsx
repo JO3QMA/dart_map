@@ -13,11 +13,7 @@ const mockRegion: Region = {
 describe("ResultBar", () => {
   it("renders result name without parentName", () => {
     render(
-      <ResultBar
-        result={mockRegion}
-        mode="country"
-        onDrillDown={vi.fn()}
-      />,
+      <ResultBar result={mockRegion} mode="country" onDrillDown={vi.fn()} />,
     );
     expect(screen.getByText(/🎯 東京都/)).toBeInTheDocument();
   });
@@ -57,11 +53,7 @@ describe("ResultBar", () => {
 
   it("shows drill down button in country mode", () => {
     render(
-      <ResultBar
-        result={mockRegion}
-        mode="country"
-        onDrillDown={vi.fn()}
-      />,
+      <ResultBar result={mockRegion} mode="country" onDrillDown={vi.fn()} />,
     );
     expect(
       screen.getByRole("button", { name: /さらに探索する/ }),
@@ -70,11 +62,7 @@ describe("ResultBar", () => {
 
   it("shows drill down button in prefecture mode", () => {
     render(
-      <ResultBar
-        result={mockRegion}
-        mode="prefecture"
-        onDrillDown={vi.fn()}
-      />,
+      <ResultBar result={mockRegion} mode="prefecture" onDrillDown={vi.fn()} />,
     );
     expect(
       screen.getByRole("button", { name: /さらに探索する/ }),

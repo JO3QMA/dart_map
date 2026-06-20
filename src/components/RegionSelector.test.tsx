@@ -55,7 +55,9 @@ describe("RegionSelector", () => {
 
   it("renders mode buttons", () => {
     render(<RegionSelector {...defaultProps} />);
-    expect(screen.getByRole("button", { name: /日本全国/ })).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /日本全国/ }),
+    ).toBeInTheDocument();
     expect(
       screen.getByRole("button", { name: /都道府県内/ }),
     ).toBeInTheDocument();

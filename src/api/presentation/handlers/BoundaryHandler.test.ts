@@ -48,7 +48,10 @@ describe("boundaryHandler", () => {
   });
 
   it("returns cached response on cache hit", async () => {
-    const cachedBody = JSON.stringify({ type: "FeatureCollection", features: [] });
+    const cachedBody = JSON.stringify({
+      type: "FeatureCollection",
+      features: [],
+    });
     mockMatch.mockResolvedValue(
       new Response(cachedBody, {
         status: 200,
@@ -66,7 +69,10 @@ describe("boundaryHandler", () => {
   });
 
   it("fetches upstream, caches, and returns on cache miss", async () => {
-    const upstreamBody = JSON.stringify({ type: "Feature", properties: { name: "Tokyo" } });
+    const upstreamBody = JSON.stringify({
+      type: "Feature",
+      properties: { name: "Tokyo" },
+    });
     mockFetch.mockResolvedValue(
       new Response(upstreamBody, {
         status: 200,

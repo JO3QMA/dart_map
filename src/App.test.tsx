@@ -11,7 +11,8 @@ import { fetchRandomTarget, fetchRegions } from "./services/dataService";
 import type { Region } from "./types";
 
 vi.mock("./services/dataService", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("./services/dataService")>();
+  const actual =
+    await importOriginal<typeof import("./services/dataService")>();
   return {
     ...actual,
     fetchRegions: vi.fn().mockResolvedValue([]),
@@ -185,7 +186,9 @@ describe("App", () => {
     expect(
       screen.queryByRole("heading", { name: "京都府" }),
     ).not.toBeInTheDocument();
-    expect(screen.getByRole("region", { name: "抽選結果" })).toBeInTheDocument();
+    expect(
+      screen.getByRole("region", { name: "抽選結果" }),
+    ).toBeInTheDocument();
   });
 
   it("resolves prefecture name via fetchRegions effect", async () => {

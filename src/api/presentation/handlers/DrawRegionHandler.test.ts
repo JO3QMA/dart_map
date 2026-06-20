@@ -11,9 +11,7 @@ type D1Row = {
   parent_id: string | null;
 };
 
-function createMockDb(options: {
-  firstResult?: D1Row | null;
-}): D1Database {
+function createMockDb(options: { firstResult?: D1Row | null }): D1Database {
   return {
     prepare: vi.fn(() => ({
       bind: vi.fn(() => ({

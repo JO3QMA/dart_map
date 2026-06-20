@@ -72,13 +72,20 @@ describe("router", () => {
     );
 
     expect(res.status).toBe(200);
-    await expect(res.json()).resolves.toMatchObject({ id: "13", type: "prefecture" });
+    await expect(res.json()).resolves.toMatchObject({
+      id: "13",
+      type: "prefecture",
+    });
   });
 
   it("routes GET /api/boundary", async () => {
-    const mockMatch = vi.fn().mockResolvedValue(
-      new Response(JSON.stringify({ type: "FeatureCollection" }), { status: 200 }),
-    );
+    const mockMatch = vi
+      .fn()
+      .mockResolvedValue(
+        new Response(JSON.stringify({ type: "FeatureCollection" }), {
+          status: 200,
+        }),
+      );
     const mockPut = vi.fn();
     vi.stubGlobal("caches", { default: { match: mockMatch, put: mockPut } });
 

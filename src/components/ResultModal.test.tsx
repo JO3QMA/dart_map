@@ -19,12 +19,7 @@ describe("ResultModal", () => {
   };
 
   it("renders result name, parent, and coordinates", () => {
-    render(
-      <ResultModal
-        {...defaultProps}
-        parentName="近畿地方"
-      />,
-    );
+    render(<ResultModal {...defaultProps} parentName="近畿地方" />);
     expect(screen.getByRole("heading", { name: "大阪府" })).toBeInTheDocument();
     expect(screen.getByText("近畿地方")).toBeInTheDocument();
     expect(screen.getByText(/34\.6937,\s*135\.5023/)).toBeInTheDocument();
@@ -53,9 +48,7 @@ describe("ResultModal", () => {
 
   it("calls onDrillDown when drill down button is clicked", () => {
     const onDrillDown = vi.fn();
-    render(
-      <ResultModal {...defaultProps} onDrillDown={onDrillDown} />,
-    );
+    render(<ResultModal {...defaultProps} onDrillDown={onDrillDown} />);
     fireEvent.click(document.getElementById("drill-down-btn")!);
     expect(onDrillDown).toHaveBeenCalledOnce();
     expect(onDrillDown).toHaveBeenCalledWith("prefecture", "osaka");

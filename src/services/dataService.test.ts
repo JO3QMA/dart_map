@@ -183,8 +183,6 @@ describe("getGoogleMapsUrl", () => {
       coordinate: { lat: 35.69, lng: 139.75 },
     };
     const url = getGoogleMapsUrl(city, "東京都");
-    expect(url).toContain(
-      encodeURIComponent("東京都 千代田区"),
-    );
+    expect(url).toContain(encodeURIComponent("東京都 千代田区"));
   });
 });

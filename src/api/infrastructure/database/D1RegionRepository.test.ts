@@ -159,10 +159,7 @@ describe("D1RegionRepository", () => {
     });
     const repo = new D1RegionRepository(db);
 
-    const result = await repo.findRandomTownAmongParentIds([
-      "27102",
-      "27103",
-    ]);
+    const result = await repo.findRandomTownAmongParentIds(["27102", "27103"]);
 
     expect(bind).toHaveBeenCalledWith("27102", "27103");
     expect(result).toEqual({
