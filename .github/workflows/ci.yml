@@ -68,4 +68,4 @@ jobs:
         run: npm run format:check
 
       - name: Test (Vitest)
-        run: npm run test:run
+        run: npm run test:coverage

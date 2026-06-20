@@ -1,7 +1,8 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi, afterEach } from "vitest";
 import {
   buildResultSearchParams,
   parseResultFromSearch,
+  getResultShareUrl,
   type ResultSharePayload,
 } from "./shareUrl";
 
@@ -155,5 +156,33 @@ describe("parseResultFromSearch", () => {
       );
       expect(parsed!.selectedCity ?? null).toBe(payload.selectedCity ?? null);
     }
+  });
+});
+
+describe("getResultShareUrl", () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it("builds full URL from window location and payload", () => {
+    vi.stubGlobal("window", {
+      location: {
+        origin: "https://example.com",
+        pathname: "/",
+      },
+    });
+
+    const url = getResultShareUrl(prefectureResult);
+
+    expect(url).toContain("https://example.com/?");
+    expect(url).toContain("id=13");
+    expect(url).toContain("mode=country");
+    expect(url).toContain("name=%E6%9D%B1%E4%BA%AC%E9%83%BD");
+  });
+
+  it("returns empty string when window is undefined", () => {
+    vi.stubGlobal("window", undefined);
+
+    expect(getResultShareUrl(prefectureResult)).toBe("");
   });
 });
