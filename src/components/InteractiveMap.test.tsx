@@ -121,14 +121,18 @@ describe("InteractiveMap", () => {
     vi.mocked(defaultProps.onThrow).mockClear();
     flyTo.mockClear();
     flyToBounds.mockClear();
-    global.fetch = vi.fn().mockResolvedValue({
-      ok: true,
-      json: async () => geoJsonResponse,
-    });
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => geoJsonResponse,
+      }),
+    );
   });
 
   afterEach(() => {
     vi.useRealTimers();
+    vi.unstubAllGlobals();
   });
 
   it("renders map container", () => {
@@ -193,11 +197,11 @@ describe("InteractiveMap", () => {
     render(<InteractiveMap {...defaultProps} />);
 
     await waitFor(() => {
-      expect(global.fetch).toHaveBeenCalledWith(
+      expect(fetch).toHaveBeenCalledWith(
         expect.stringContaining("/api/boundary?q="),
       );
     });
-    expect(global.fetch).toHaveBeenCalledWith(
+    expect(fetch).toHaveBeenCalledWith(
       expect.stringContaining(encodeURIComponent("日本")),
     );
   });
@@ -212,7 +216,7 @@ describe("InteractiveMap", () => {
     );
 
     await waitFor(() => {
-      expect(global.fetch).toHaveBeenCalledWith(
+      expect(fetch).toHaveBeenCalledWith(
         expect.stringContaining(encodeURIComponent("東京都")),
       );
     });
@@ -229,7 +233,7 @@ describe("InteractiveMap", () => {
     );
 
     await waitFor(() => {
-      expect(global.fetch).toHaveBeenCalledWith(
+      expect(fetch).toHaveBeenCalledWith(
         expect.stringMatching(
           /q=.*%E6%9D%B1%E4%BA%AC%E9%83%BD.*%E5%8D%83%E4%BB%A3%E7%94%B0%E5%8C%BA/,
         ),
@@ -250,7 +254,7 @@ describe("InteractiveMap", () => {
     );
 
     await waitFor(() => {
-      expect(global.fetch).toHaveBeenCalledWith(
+      expect(fetch).toHaveBeenCalledWith(
         expect.stringMatching(
           /q=.*%E6%9D%B1%E4%BA%AC%E9%83%BD.*%E5%8D%83%E4%BB%A3%E7%94%B0%E5%8C%BA/,
         ),
@@ -280,10 +284,10 @@ describe("InteractiveMap", () => {
     );
 
     await waitFor(() => {
-      expect(global.fetch).toHaveBeenCalledTimes(2);
+      expect(fetch).toHaveBeenCalledTimes(2);
     });
 
-    expect(global.fetch).toHaveBeenNthCalledWith(
+    expect(fetch).toHaveBeenNthCalledWith(
       2,
       expect.stringMatching(
         /q=.*%E6%9D%B1%E4%BA%AC%E9%83%BD.*%E5%8D%83%E4%BB%A3%E7%94%B0%E5%8C%BA/,
@@ -313,7 +317,7 @@ describe("InteractiveMap", () => {
     );
 
     await waitFor(() => {
-      expect(global.fetch).toHaveBeenCalledWith(
+      expect(fetch).toHaveBeenCalledWith(
         expect.stringMatching(
           /q=.*%E6%97%A5%E6%9C%AC.*%E4%BA%AC%E9%83%BD%E5%BA%9C/,
         ),
@@ -327,15 +331,18 @@ describe("InteractiveMap", () => {
     );
 
     await waitFor(() => {
-      expect(global.fetch).not.toHaveBeenCalled();
+      expect(fetch).not.toHaveBeenCalled();
     });
   });
 
   it("hides base boundary when prefecture result city overlay is shown", async () => {
-    global.fetch = vi.fn().mockResolvedValue({
-      ok: true,
-      json: async () => geoJsonResponse,
-    });
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => geoJsonResponse,
+      }),
+    );
 
     render(
       <InteractiveMap
@@ -347,7 +354,7 @@ describe("InteractiveMap", () => {
     );
 
     await waitFor(() => {
-      expect(global.fetch).toHaveBeenCalledTimes(2);
+      expect(fetch).toHaveBeenCalledTimes(2);
     });
 
     const geojsonLayers = screen.getAllByTestId("geojson");
@@ -379,10 +386,13 @@ describe("InteractiveMap", () => {
   });
 
   it("handles boundary fetch failure gracefully", async () => {
-    global.fetch = vi.fn().mockResolvedValue({
-      ok: false,
-      status: 500,
-    });
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue({
+        ok: false,
+        status: 500,
+      }),
+    );
     const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
 
     render(<InteractiveMap {...defaultProps} />);

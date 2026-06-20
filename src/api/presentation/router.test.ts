@@ -59,7 +59,7 @@ describe("router", () => {
     );
 
     expect(res.status).toBe(200);
-    const body = await res.json();
+    const body = (await res.json()) as Array<{ id: string }>;
     expect(body).toHaveLength(1);
     expect(body[0].id).toBe("13");
   });
