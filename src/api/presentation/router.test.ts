@@ -79,13 +79,11 @@ describe("router", () => {
   });
 
   it("routes GET /api/boundary", async () => {
-    const mockMatch = vi
-      .fn()
-      .mockResolvedValue(
-        new Response(JSON.stringify({ type: "FeatureCollection" }), {
-          status: 200,
-        }),
-      );
+    const mockMatch = vi.fn().mockResolvedValue(
+      new Response(JSON.stringify({ type: "FeatureCollection" }), {
+        status: 200,
+      }),
+    );
     const mockPut = vi.fn();
     vi.stubGlobal("caches", { default: { match: mockMatch, put: mockPut } });
 
