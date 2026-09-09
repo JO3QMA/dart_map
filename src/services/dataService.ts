@@ -18,9 +18,7 @@ export async function fetchRegions(
   if (parentId) search.set("parent_id", parentId);
   if (mergeDesignated) search.set("merge_designated", "true");
   const query = search.toString();
-  const res = await fetch(
-    `${API_BASE}/api/regions${query ? `?${query}` : ""}`,
-  );
+  const res = await fetch(`${API_BASE}/api/regions${query ? `?${query}` : ""}`);
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
     throw new Error(
