@@ -1,10 +1,8 @@
 import type { Context } from "hono";
 import { DrawRegionUseCase } from "../../usecases/DrawRegionUseCase";
-import { D1RegionRepository } from "../../infrastructure/database/D1RegionRepository";
+import { DbEnv, JSON_UTF8, regionRepo } from "../handlerUtils";
 
-export type Env = { DB: D1Database };
-
-export async function drawRegionHandler(c: Context<{ Bindings: Env }>) {
+export async function drawRegionHandler(c: Context<{ Bindings: DbEnv }>) {
   const mode = c.req.query("mode");
   if (mode !== "country" && mode !== "prefecture" && mode !== "city") {
     return c.json(
@@ -25,9 +23,7 @@ export async function drawRegionHandler(c: Context<{ Bindings: Env }>) {
   }
 
   const mergeDesignated = c.req.query("merge_designated") === "true";
-
-  const repo = new D1RegionRepository(c.env.DB);
-  const useCase = new DrawRegionUseCase(repo);
+  const useCase = new DrawRegionUseCase(regionRepo(c));
 
   try {
     const region = await useCase.run({
@@ -38,9 +34,7 @@ export async function drawRegionHandler(c: Context<{ Bindings: Env }>) {
     if (!region) {
       return c.json({ error: "No region found for the given criteria" }, 404);
     }
-    return c.json(region, 200, {
-      "Content-Type": "application/json; charset=utf-8",
-    });
+    return c.json(region, 200, JSON_UTF8);
   } catch (err) {
     console.error("drawRegionHandler error:", err);
     return c.json({ error: "Internal server error" }, 500);

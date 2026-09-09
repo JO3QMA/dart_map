@@ -46,10 +46,6 @@ export function buildResultSearchParams(
   return params;
 }
 
-function isFiniteNumber(value: unknown): value is number {
-  return typeof value === "number" && Number.isFinite(value);
-}
-
 /**
  * Parse result payload from location.search. Returns null if required params
  * are missing or invalid.
@@ -78,7 +74,7 @@ export function parseResultFromSearch(
 
   const lat = Number(latRaw);
   const lng = Number(lngRaw);
-  if (!isFiniteNumber(lat) || !isFiniteNumber(lng)) {
+  if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
     return null;
   }
 

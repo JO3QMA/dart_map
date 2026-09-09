@@ -2,15 +2,6 @@ import type { Region, RegionLevel, GameMode } from "../types";
 
 const API_BASE = "";
 
-function buildParams(params: Record<string, string | undefined>): string {
-  const search = new URLSearchParams();
-  for (const [k, v] of Object.entries(params)) {
-    if (v !== undefined && v !== "") search.set(k, v);
-  }
-  const q = search.toString();
-  return q ? `?${q}` : "";
-}
-
 /**
  * 地域リストをAPIから取得する。
  * type=city のときは parent_id 必須。merge_designated=true で政令指定都市の区をまとめる。
@@ -23,10 +14,13 @@ export async function fetchRegions(
   if (level === "city" && !parentId) {
     throw new Error("parentId is required when fetching city level regions");
   }
-  const params: Record<string, string> = { type: level };
-  if (parentId) params.parent_id = parentId;
-  if (mergeDesignated) params.merge_designated = "true";
-  const res = await fetch(`${API_BASE}/api/regions${buildParams(params)}`);
+  const search = new URLSearchParams({ type: level });
+  if (parentId) search.set("parent_id", parentId);
+  if (mergeDesignated) search.set("merge_designated", "true");
+  const query = search.toString();
+  const res = await fetch(
+    `${API_BASE}/api/regions${query ? `?${query}` : ""}`,
+  );
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
     throw new Error(
@@ -45,10 +39,11 @@ export async function fetchRandomTarget(
   parentId?: string,
   mergeDesignated?: boolean,
 ): Promise<Region> {
-  const params: Record<string, string> = { mode };
-  if (parentId) params.parent_id = parentId;
-  if (mergeDesignated) params.merge_designated = "true";
-  const res = await fetch(`${API_BASE}/api/draw${buildParams(params)}`);
+  const search = new URLSearchParams({ mode });
+  if (parentId) search.set("parent_id", parentId);
+  if (mergeDesignated) search.set("merge_designated", "true");
+  const query = search.toString();
+  const res = await fetch(`${API_BASE}/api/draw${query ? `?${query}` : ""}`);
   if (!res.ok) {
     if (res.status === 404) {
       throw new Error("No region found for the given criteria");

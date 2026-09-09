@@ -1,32 +1,7 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect } from "vitest";
 import { Hono } from "hono";
 import { getRegionsHandler } from "./GetRegionsHandler";
-
-type D1Row = {
-  id: string;
-  type: string;
-  name: string;
-  lat: number;
-  lng: number;
-  parent_id: string | null;
-};
-
-function createMockDb(options: {
-  allResults?: D1Row[];
-  throwOnQuery?: boolean;
-}): D1Database {
-  return {
-    prepare: vi.fn(() => ({
-      bind: vi.fn(() => ({
-        all: vi.fn(async () => {
-          if (options.throwOnQuery) throw new Error("DB failure");
-          return { results: options.allResults ?? [] };
-        }),
-        first: vi.fn(async () => null),
-      })),
-    })),
-  } as unknown as D1Database;
-}
+import { createMockDb } from "../../../test/mockD1";
 
 function createApp(db: D1Database) {
   const app = new Hono<{ Bindings: { DB: D1Database } }>();

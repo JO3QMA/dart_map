@@ -47,6 +47,22 @@ interface MapControllerProps {
 
 type BoundaryGeoJSON = FeatureCollection;
 
+async function fetchBoundaryGeoJSON(
+  query: string,
+): Promise<BoundaryGeoJSON | null> {
+  const params = new URLSearchParams({ q: query });
+  const res = await fetch(`/api/boundary?${params.toString()}`);
+  if (!res.ok) {
+    throw new Error(`Failed to fetch boundary: ${res.status}`);
+  }
+
+  const json = (await res.json()) as BoundaryGeoJSON;
+  if (json.features?.length > 1) {
+    return { ...json, features: [json.features[0]] };
+  }
+  return json;
+}
+
 export default function InteractiveMap({
   isAnimating,
   onThrow,
@@ -241,22 +257,8 @@ function MapController({
       setData(null);
 
       try {
-        const params = new URLSearchParams({ q: query });
-        const res = await fetch(`/api/boundary?${params.toString()}`);
-
-        if (!res.ok) {
-          throw new Error(`Failed to fetch boundary: ${res.status}`);
-        }
-
-        const json = (await res.json()) as BoundaryGeoJSON;
+        const filtered = await fetchBoundaryGeoJSON(query);
         if (cancelled) return;
-
-        // 先頭フィーチャのみに絞り込み、余分な境界線が描画されるのを防ぐ
-        const filtered: BoundaryGeoJSON =
-          json.features?.length > 1
-            ? { ...json, features: [json.features[0]] }
-            : json;
-
         setData(filtered);
       } catch {
         if (cancelled) return;
@@ -293,21 +295,8 @@ function MapController({
       }
 
       try {
-        const params = new URLSearchParams({ q: cityQuery });
-        const res = await fetch(`/api/boundary?${params.toString()}`);
-
-        if (!res.ok) {
-          throw new Error(`Failed to fetch city boundary: ${res.status}`);
-        }
-
-        const json = (await res.json()) as BoundaryGeoJSON;
+        const filtered = await fetchBoundaryGeoJSON(cityQuery);
         if (cancelled) return;
-
-        const filtered: BoundaryGeoJSON =
-          json.features?.length > 1
-            ? { ...json, features: [json.features[0]] }
-            : json;
-
         setCityBoundary(filtered);
       } catch {
         if (cancelled) return;
