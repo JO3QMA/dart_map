@@ -12,10 +12,7 @@ interface RegionSelectorProps {
   onCityChange: (id: string | null) => void;
   mergeDesignatedCities: boolean;
   onMergeDesignatedCitiesChange: (v: boolean) => void;
-  onRegionLabelsChange?: (labels: {
-    prefecture: string;
-    city: string;
-  }) => void;
+  onRegionLabelsChange?: (labels: { prefecture: string; city: string }) => void;
 }
 
 const MODE_OPTIONS: { value: GameMode; label: string; icon: typeof Globe }[] = [
