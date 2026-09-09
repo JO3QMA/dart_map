@@ -3,7 +3,6 @@
 
 import * as fs from "fs";
 import * as path from "path";
-import https from "https";
 import type { Region } from "../src/types";
 
 type RegionType = Region["type"];
@@ -45,29 +44,12 @@ interface TownPoint {
   lng: number;
 }
 
-function fetchJson<T>(url: string): Promise<T> {
-  return new Promise((resolve, reject) => {
-    https
-      .get(url, (res) => {
-        if (!res.statusCode || res.statusCode >= 400) {
-          reject(new Error(`Request failed: ${url}, status=${res.statusCode}`));
-          return;
-        }
-
-        const chunks: Buffer[] = [];
-        res.on("data", (c) => chunks.push(c));
-        res.on("end", () => {
-          try {
-            const text = Buffer.concat(chunks).toString("utf8");
-            const json = JSON.parse(text) as T;
-            resolve(json);
-          } catch (e) {
-            reject(e);
-          }
-        });
-      })
-      .on("error", (err) => reject(err));
-  });
+async function fetchJson<T>(url: string): Promise<T> {
+  const res = await fetch(url);
+  if (!res.ok) {
+    throw new Error(`Request failed: ${url}, status=${res.status}`);
+  }
+  return res.json() as Promise<T>;
 }
 
 async function fetchCityData(

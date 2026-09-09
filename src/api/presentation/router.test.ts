@@ -1,28 +1,6 @@
 import { describe, it, expect, vi } from "vitest";
 import app from "./router";
-
-type D1Row = {
-  id: string;
-  type: string;
-  name: string;
-  lat: number;
-  lng: number;
-  parent_id: string | null;
-};
-
-function createMockDb(options: {
-  allResults?: D1Row[];
-  firstResult?: D1Row | null;
-}): D1Database {
-  return {
-    prepare: vi.fn(() => ({
-      bind: vi.fn(() => ({
-        all: vi.fn(async () => ({ results: options.allResults ?? [] })),
-        first: vi.fn(async () => options.firstResult ?? null),
-      })),
-    })),
-  } as unknown as D1Database;
-}
+import { createMockDb } from "../../test/mockD1";
 
 function createEnv(overrides?: Partial<{ DB: D1Database; ASSETS: Fetcher }>) {
   return {
