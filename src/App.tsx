@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback } from "react";
 import type { Region, GameMode } from "./types";
 import { fetchRandomTarget, fetchRegions } from "./services/dataService";
 import { parseResultFromSearch, getResultShareUrl } from "./utils/shareUrl";
@@ -37,50 +37,8 @@ export default function App() {
   const [mergeDesignatedCities, setMergeDesignatedCities] =
     useState<boolean>(false);
 
-  const [fetchedPrefectureNames, setFetchedPrefectureNames] = useState<
-    Record<string, string>
-  >({});
-  const [fetchedCityNames, setFetchedCityNames] = useState<
-    Record<string, string>
-  >({});
-
-  const prefectureName = selectedPrefecture
-    ? (fetchedPrefectureNames[selectedPrefecture] ?? "")
-    : "";
-  const cityName =
-    !selectedCity || !selectedPrefecture
-      ? ""
-      : selectedCity.startsWith("DC-")
-        ? selectedCity.split("-").slice(2).join("-")
-        : (fetchedCityNames[selectedCity] ?? "");
-
-  useEffect(() => {
-    if (!selectedPrefecture) return;
-    fetchRegions("prefecture").then((regions) => {
-      const found = regions.find((r) => r.id === selectedPrefecture);
-      setFetchedPrefectureNames((prev) => ({
-        ...prev,
-        [selectedPrefecture]: found?.name ?? "",
-      }));
-    });
-  }, [selectedPrefecture]);
-
-  useEffect(() => {
-    if (
-      !selectedCity ||
-      !selectedPrefecture ||
-      selectedCity.startsWith("DC-")
-    ) {
-      return;
-    }
-    fetchRegions("city", selectedPrefecture).then((regions) => {
-      const found = regions.find((r) => r.id === selectedCity);
-      setFetchedCityNames((prev) => ({
-        ...prev,
-        [selectedCity]: found?.name ?? "",
-      }));
-    });
-  }, [selectedCity, selectedPrefecture]);
+  const [prefectureName, setPrefectureName] = useState("");
+  const [cityName, setCityName] = useState("");
 
   const getParentId = useCallback((): string | undefined => {
     switch (mode) {
@@ -220,6 +178,10 @@ export default function App() {
           onCityChange={setSelectedCity}
           mergeDesignatedCities={mergeDesignatedCities}
           onMergeDesignatedCitiesChange={setMergeDesignatedCities}
+          onRegionLabelsChange={({ prefecture, city }) => {
+            setPrefectureName(prefecture);
+            setCityName(city);
+          }}
         />
       </div>
 

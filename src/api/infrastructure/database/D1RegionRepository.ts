@@ -1,8 +1,6 @@
-import type { Region } from "../../domain/models/Region";
-import type {
-  IRegionRepository,
-  RegionLevel,
-} from "../../domain/repositories/IRegionRepository";
+import type { Region, RegionLevel } from "../../../types";
+
+type DbRegionLevel = Exclude<RegionLevel, "country">;
 
 interface D1Row {
   id: string;
@@ -23,10 +21,10 @@ function rowToRegion(row: D1Row): Region {
   };
 }
 
-export class D1RegionRepository implements IRegionRepository {
+export class D1RegionRepository {
   constructor(private readonly db: D1Database) {}
 
-  async findByType(type: RegionLevel): Promise<Region[]> {
+  async findByType(type: DbRegionLevel): Promise<Region[]> {
     const result = await this.db
       .prepare(
         "SELECT id, type, name, lat, lng, parent_id FROM regions WHERE type = ?",
@@ -37,7 +35,7 @@ export class D1RegionRepository implements IRegionRepository {
   }
 
   async findByTypeAndParent(
-    type: RegionLevel,
+    type: DbRegionLevel,
     parentId: string,
   ): Promise<Region[]> {
     const result = await this.db
@@ -50,7 +48,7 @@ export class D1RegionRepository implements IRegionRepository {
   }
 
   async findRandom(
-    type: RegionLevel,
+    type: DbRegionLevel,
     parentId: string | null,
   ): Promise<Region | null> {
     const parent = parentId ?? "JP";

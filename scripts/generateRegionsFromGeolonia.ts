@@ -5,31 +5,9 @@ import * as fs from "fs";
 import * as path from "path";
 import https from "https";
 import type { Region } from "../src/types";
+import { DESIGNATED_CITY_NAMES } from "../src/api/domain/services/DesignatedCityService";
 
 type RegionType = Region["type"];
-
-const DESIGNATED_CITIES: { name: string; prefix: string }[] = [
-  { name: "札幌市", prefix: "札幌市" },
-  { name: "仙台市", prefix: "仙台市" },
-  { name: "さいたま市", prefix: "さいたま市" },
-  { name: "千葉市", prefix: "千葉市" },
-  { name: "横浜市", prefix: "横浜市" },
-  { name: "川崎市", prefix: "川崎市" },
-  { name: "相模原市", prefix: "相模原市" },
-  { name: "新潟市", prefix: "新潟市" },
-  { name: "静岡市", prefix: "静岡市" },
-  { name: "浜松市", prefix: "浜松市" },
-  { name: "名古屋市", prefix: "名古屋市" },
-  { name: "京都市", prefix: "京都市" },
-  { name: "大阪市", prefix: "大阪市" },
-  { name: "堺市", prefix: "堺市" },
-  { name: "神戸市", prefix: "神戸市" },
-  { name: "岡山市", prefix: "岡山市" },
-  { name: "広島市", prefix: "広島市" },
-  { name: "北九州市", prefix: "北九州市" },
-  { name: "福岡市", prefix: "福岡市" },
-  { name: "熊本市", prefix: "熊本市" },
-];
 
 const JA_JSON_URL = "https://geolonia.github.io/japanese-addresses/api/ja.json";
 
@@ -144,9 +122,9 @@ async function fetchCityData(
 function buildDesignatedCities(cities: Region[]): Region[] {
   const result: Region[] = [];
 
-  for (const def of DESIGNATED_CITIES) {
+  for (const cityName of DESIGNATED_CITY_NAMES) {
     const wards = cities.filter(
-      (c) => c.name.startsWith(def.prefix) && c.name !== def.name,
+      (c) => c.name.startsWith(cityName) && c.name !== cityName,
     );
     if (!wards.length) continue;
 
@@ -155,9 +133,9 @@ function buildDesignatedCities(cities: Region[]): Region[] {
     const prefId = wards[0].parentId!;
 
     result.push({
-      id: `DC-${prefId}-${def.prefix}`,
+      id: `DC-${prefId}-${cityName}`,
       type: "city",
-      name: def.name,
+      name: cityName,
       coordinate: { lat, lng },
       parentId: prefId,
     });

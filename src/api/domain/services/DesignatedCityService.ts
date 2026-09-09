@@ -1,4 +1,4 @@
-import type { Region } from "../models/Region";
+import type { Region } from "../../../types";
 
 /** 政令指定都市の名称リスト（区をまとめる際の判定に使用） */
 export const DESIGNATED_CITY_NAMES: string[] = [
