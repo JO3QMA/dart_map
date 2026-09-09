@@ -14,8 +14,3 @@ export interface Region {
 }
 
 export type GameMode = "country" | "prefecture" | "city";
-
-export interface DartPosition {
-  x: number;
-  y: number;
-}
