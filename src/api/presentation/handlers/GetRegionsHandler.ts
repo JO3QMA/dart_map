@@ -1,10 +1,8 @@
 import type { Context } from "hono";
 import { getRegions } from "../../regions";
-import { D1RegionRepository } from "../../infrastructure/database/D1RegionRepository";
+import { DbEnv, JSON_UTF8, regionRepo } from "../handlerUtils";
 
-export type Env = { DB: D1Database };
-
-export async function getRegionsHandler(c: Context<{ Bindings: Env }>) {
+export async function getRegionsHandler(c: Context<{ Bindings: DbEnv }>) {
   const type = c.req.query("type");
   if (type !== "prefecture" && type !== "city") {
     return c.json(
@@ -22,17 +20,14 @@ export async function getRegionsHandler(c: Context<{ Bindings: Env }>) {
   }
 
   const mergeDesignated = c.req.query("merge_designated") === "true";
-  const repo = new D1RegionRepository(c.env.DB);
 
   try {
-    const regions = await getRegions(repo, {
+    const regions = await getRegions(regionRepo(c), {
       type,
       parentId: parentId ?? undefined,
       mergeDesignated,
     });
-    return c.json(regions, 200, {
-      "Content-Type": "application/json; charset=utf-8",
-    });
+    return c.json(regions, 200, JSON_UTF8);
   } catch (err) {
     console.error("getRegionsHandler error:", err);
     return c.json({ error: "Internal server error" }, 500);
