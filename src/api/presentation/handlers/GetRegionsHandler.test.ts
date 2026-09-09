@@ -69,7 +69,7 @@ describe("getRegionsHandler", () => {
     ]);
   });
 
-  it("returns 500 when use case fails", async () => {
+  it("returns 500 when region query fails", async () => {
     const request = createApp(createMockDb({ throwOnQuery: true }));
     const res = await request("/api/regions?type=prefecture");
 

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Globe, MapPin, Building2 } from "lucide-react";
 import type { GameMode, Region } from "../types";
 import { fetchRegions } from "../services/dataService";
@@ -12,6 +12,7 @@ interface RegionSelectorProps {
   onCityChange: (id: string | null) => void;
   mergeDesignatedCities: boolean;
   onMergeDesignatedCitiesChange: (v: boolean) => void;
+  onRegionLabelsChange?: (labels: { prefecture: string; city: string }) => void;
 }
 
 const MODE_OPTIONS: { value: GameMode; label: string; icon: typeof Globe }[] = [
@@ -29,15 +30,18 @@ export default function RegionSelector({
   onCityChange,
   mergeDesignatedCities,
   onMergeDesignatedCitiesChange,
+  onRegionLabelsChange,
 }: RegionSelectorProps) {
   const [prefectures, setPrefectures] = useState<Region[]>([]);
   const [citiesByPrefecture, setCitiesByPrefecture] = useState<
     Record<string, Region[]>
   >({});
 
-  const cities = selectedPrefecture
-    ? (citiesByPrefecture[selectedPrefecture] ?? [])
-    : [];
+  const cities = useMemo(
+    () =>
+      selectedPrefecture ? (citiesByPrefecture[selectedPrefecture] ?? []) : [],
+    [selectedPrefecture, citiesByPrefecture],
+  );
 
   useEffect(() => {
     fetchRegions("prefecture").then(setPrefectures);
@@ -54,6 +58,31 @@ export default function RegionSelector({
       },
     );
   }, [selectedPrefecture, mergeDesignatedCities]);
+
+  useEffect(() => {
+    if (!onRegionLabelsChange) return;
+
+    if (!selectedPrefecture) {
+      onRegionLabelsChange({ prefecture: "", city: "" });
+      return;
+    }
+
+    const prefecture =
+      prefectures.find((p) => p.id === selectedPrefecture)?.name ?? "";
+    const city = !selectedCity
+      ? ""
+      : selectedCity.startsWith("DC-")
+        ? selectedCity.split("-").slice(2).join("-")
+        : (cities.find((c) => c.id === selectedCity)?.name ?? "");
+
+    onRegionLabelsChange({ prefecture, city });
+  }, [
+    selectedPrefecture,
+    selectedCity,
+    prefectures,
+    cities,
+    onRegionLabelsChange,
+  ]);
 
   const handleModeChange = (newMode: GameMode) => {
     onModeChange(newMode);

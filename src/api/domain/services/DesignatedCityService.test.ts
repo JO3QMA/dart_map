@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import type { Region } from "../models/Region";
+import type { Region } from "../../../types";
 import {
   isDesignatedCityId,
   getWardFilter,

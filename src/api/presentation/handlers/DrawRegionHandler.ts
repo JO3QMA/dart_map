@@ -1,5 +1,5 @@
 import type { Context } from "hono";
-import { DrawRegionUseCase } from "../../usecases/DrawRegionUseCase";
+import { drawRegion } from "../../regions";
 import { DbEnv, JSON_UTF8, regionRepo } from "../handlerUtils";
 
 export async function drawRegionHandler(c: Context<{ Bindings: DbEnv }>) {
@@ -23,10 +23,9 @@ export async function drawRegionHandler(c: Context<{ Bindings: DbEnv }>) {
   }
 
   const mergeDesignated = c.req.query("merge_designated") === "true";
-  const useCase = new DrawRegionUseCase(regionRepo(c));
 
   try {
-    const region = await useCase.run({
+    const region = await drawRegion(regionRepo(c), {
       mode,
       parentId: parentId ?? undefined,
       mergeDesignated,

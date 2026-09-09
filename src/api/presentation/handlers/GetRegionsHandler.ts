@@ -1,5 +1,5 @@
 import type { Context } from "hono";
-import { GetRegionsUseCase } from "../../usecases/GetRegionsUseCase";
+import { getRegions } from "../../regions";
 import { DbEnv, JSON_UTF8, regionRepo } from "../handlerUtils";
 
 export async function getRegionsHandler(c: Context<{ Bindings: DbEnv }>) {
@@ -20,10 +20,9 @@ export async function getRegionsHandler(c: Context<{ Bindings: DbEnv }>) {
   }
 
   const mergeDesignated = c.req.query("merge_designated") === "true";
-  const useCase = new GetRegionsUseCase(regionRepo(c));
 
   try {
-    const regions = await useCase.run({
+    const regions = await getRegions(regionRepo(c), {
       type,
       parentId: parentId ?? undefined,
       mergeDesignated,

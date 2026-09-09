@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import type { Region } from "../domain/models/Region";
-import type { IRegionRepository } from "../domain/repositories/IRegionRepository";
-import { DrawRegionUseCase } from "./DrawRegionUseCase";
+import type { Region } from "../types";
+import { D1RegionRepository } from "./infrastructure/database/D1RegionRepository";
+import { drawRegion, getRegions } from "./regions";
 
 function city(id: string, name: string, parentId?: string): Region {
   return {
@@ -23,9 +23,8 @@ function town(id: string, name: string, parentId: string): Region {
   };
 }
 
-describe("DrawRegionUseCase", () => {
-  let repo: IRegionRepository;
-  let useCase: DrawRegionUseCase;
+describe("getRegions", () => {
+  let repo: D1RegionRepository;
 
   beforeEach(() => {
     repo = {
@@ -33,8 +32,86 @@ describe("DrawRegionUseCase", () => {
       findByTypeAndParent: vi.fn(),
       findRandom: vi.fn(),
       findRandomTownAmongParentIds: vi.fn(),
-    };
-    useCase = new DrawRegionUseCase(repo);
+    } as unknown as D1RegionRepository;
+  });
+
+  it("returns prefecture list when type is prefecture", async () => {
+    const prefectures: Region[] = [
+      {
+        id: "13",
+        type: "prefecture",
+        name: "東京都",
+        coordinate: { lat: 35.68, lng: 139.69 },
+      },
+    ];
+    vi.mocked(repo.findByType).mockResolvedValue(prefectures);
+
+    const result = await getRegions(repo, { type: "prefecture" });
+
+    expect(repo.findByType).toHaveBeenCalledWith("prefecture");
+    expect(result).toEqual(prefectures);
+  });
+
+  it("throws when type is city without parentId", async () => {
+    await expect(getRegions(repo, { type: "city" })).rejects.toThrow(
+      "parent_id is required when type=city",
+    );
+  });
+
+  it("merges designated cities when mergeDesignated is true", async () => {
+    const cities: Region[] = [
+      city("27102", "大阪市北区", "27"),
+      city("27103", "大阪市中央区", "27"),
+      city("DC-27-大阪市", "大阪市", "27"),
+      city("27201", "堺市", "27"),
+    ];
+    vi.mocked(repo.findByTypeAndParent).mockResolvedValue(cities);
+
+    const result = await getRegions(repo, {
+      type: "city",
+      parentId: "27",
+      mergeDesignated: true,
+    });
+
+    expect(repo.findByTypeAndParent).toHaveBeenCalledWith("city", "27");
+    expect(result).toHaveLength(2);
+    expect(result.map((r) => r.name)).toEqual(["堺市", "大阪市"]);
+    expect(result.find((r) => r.id === "27102")).toBeUndefined();
+  });
+
+  it("throws for unsupported type", async () => {
+    await expect(
+      getRegions(repo, { type: "town" as unknown as "prefecture" }),
+    ).rejects.toThrow("Unsupported type: town");
+  });
+
+  it("returns raw cities when mergeDesignated is false", async () => {
+    const cities: Region[] = [
+      city("27102", "大阪市北区", "27"),
+      city("DC-27-大阪市", "大阪市", "27"),
+    ];
+    vi.mocked(repo.findByTypeAndParent).mockResolvedValue(cities);
+
+    const result = await getRegions(repo, {
+      type: "city",
+      parentId: "27",
+      mergeDesignated: false,
+    });
+
+    expect(result).toEqual(cities);
+  });
+});
+
+describe("drawRegion", () => {
+  let repo: D1RegionRepository;
+
+  beforeEach(() => {
+    repo = {
+      findByType: vi.fn(),
+      findByTypeAndParent: vi.fn(),
+      findRandom: vi.fn(),
+      findRandomTownAmongParentIds: vi.fn(),
+    } as unknown as D1RegionRepository;
   });
 
   afterEach(() => {
@@ -50,7 +127,7 @@ describe("DrawRegionUseCase", () => {
     };
     vi.mocked(repo.findRandom).mockResolvedValue(prefecture);
 
-    const result = await useCase.run({ mode: "country" });
+    const result = await drawRegion(repo, { mode: "country" });
 
     expect(repo.findRandom).toHaveBeenCalledWith("prefecture", "JP");
     expect(result).toEqual(prefecture);
@@ -60,7 +137,7 @@ describe("DrawRegionUseCase", () => {
     const drawn = city("13101", "千代田区", "13");
     vi.mocked(repo.findRandom).mockResolvedValue(drawn);
 
-    const result = await useCase.run({
+    const result = await drawRegion(repo, {
       mode: "prefecture",
       parentId: "13",
       mergeDesignated: false,
@@ -71,7 +148,7 @@ describe("DrawRegionUseCase", () => {
   });
 
   it("throws when prefecture mode lacks parentId", async () => {
-    await expect(useCase.run({ mode: "prefecture" })).rejects.toThrow(
+    await expect(drawRegion(repo, { mode: "prefecture" })).rejects.toThrow(
       "parent_id is required when mode=prefecture",
     );
   });
@@ -85,7 +162,7 @@ describe("DrawRegionUseCase", () => {
     vi.mocked(repo.findByTypeAndParent).mockResolvedValue(cities);
     vi.spyOn(Math, "random").mockReturnValue(0);
 
-    const result = await useCase.run({
+    const result = await drawRegion(repo, {
       mode: "prefecture",
       parentId: "27",
       mergeDesignated: true,
@@ -97,7 +174,7 @@ describe("DrawRegionUseCase", () => {
   it("returns null when merged city list is empty", async () => {
     vi.mocked(repo.findByTypeAndParent).mockResolvedValue([]);
 
-    const result = await useCase.run({
+    const result = await drawRegion(repo, {
       mode: "prefecture",
       parentId: "27",
       mergeDesignated: true,
@@ -110,7 +187,7 @@ describe("DrawRegionUseCase", () => {
     const drawn = town("13101-001", "丸の内", "13101");
     vi.mocked(repo.findRandom).mockResolvedValue(drawn);
 
-    const result = await useCase.run({
+    const result = await drawRegion(repo, {
       mode: "city",
       parentId: "13101",
     });
@@ -120,7 +197,7 @@ describe("DrawRegionUseCase", () => {
   });
 
   it("throws when city mode lacks parentId", async () => {
-    await expect(useCase.run({ mode: "city" })).rejects.toThrow(
+    await expect(drawRegion(repo, { mode: "city" })).rejects.toThrow(
       "parent_id is required when mode=city",
     );
   });
@@ -134,7 +211,7 @@ describe("DrawRegionUseCase", () => {
     vi.mocked(repo.findByTypeAndParent).mockResolvedValue(wards);
     vi.mocked(repo.findRandomTownAmongParentIds).mockResolvedValue(drawn);
 
-    const result = await useCase.run({
+    const result = await drawRegion(repo, {
       mode: "city",
       parentId: "DC-27-大阪市",
     });
@@ -148,7 +225,7 @@ describe("DrawRegionUseCase", () => {
   });
 
   it("returns null for invalid designated city ID", async () => {
-    const result = await useCase.run({
+    const result = await drawRegion(repo, {
       mode: "city",
       parentId: "DC-13-東京都",
     });
@@ -158,7 +235,7 @@ describe("DrawRegionUseCase", () => {
 
   it("throws for unsupported mode", async () => {
     await expect(
-      useCase.run({ mode: "town" as unknown as "country" }),
+      drawRegion(repo, { mode: "town" as unknown as "country" }),
     ).rejects.toThrow("Unsupported mode: town");
   });
 
@@ -167,7 +244,7 @@ describe("DrawRegionUseCase", () => {
       city("DC-27-大阪市", "大阪市", "27"),
     ]);
 
-    const result = await useCase.run({
+    const result = await drawRegion(repo, {
       mode: "city",
       parentId: "DC-27-大阪市",
     });
