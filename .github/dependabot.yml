@@ -9,13 +9,21 @@ updates:
     schedule:
       interval: "weekly"
       day: "monday"
-    open-pull-requests-limit: 10
-    versioning-strategy: increase
+    open-pull-requests-limit: 5
+    versioning-strategy: lockfile-only
     commit-message:
       prefix: "deps(npm)"
     labels:
       - "dependencies"
       - "npm"
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
+    groups:
+      production-dependencies:
+        dependency-type: "production"
+      development-dependencies:
+        dependency-type: "development"
 
   # GitHub Actions (.github/workflows 内のアクション)
   - package-ecosystem: "github-actions"
@@ -23,9 +31,16 @@ updates:
     schedule:
       interval: "weekly"
       day: "monday"
-    open-pull-requests-limit: 5
+    open-pull-requests-limit: 2
     commit-message:
       prefix: "ci(deps)"
     labels:
       - "dependencies"
       - "github-actions"
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
+    groups:
+      github-actions:
+        patterns:
+          - "*"
