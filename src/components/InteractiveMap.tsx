@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   GeoJSON as LeafletGeoJSON,
   MapContainer,
@@ -47,23 +47,37 @@ interface MapControllerProps {
 
 type BoundaryGeoJSON = FeatureCollection;
 
-async function fetchBoundaryGeoJSON(
-  query: string,
-): Promise<BoundaryGeoJSON | null> {
-  const params = new URLSearchParams({ q: query });
-  const res = await fetch(`/api/boundary?${params.toString()}`);
-  if (!res.ok) {
-    throw new Error(`Failed to fetch boundary: ${res.status}`);
-  }
+const boundaryCache = new Map<string, BoundaryGeoJSON>();
 
-  const json = (await res.json()) as BoundaryGeoJSON;
+export function clearBoundaryCache(): void {
+  boundaryCache.clear();
+}
+
+function normalizeBoundary(json: BoundaryGeoJSON): BoundaryGeoJSON {
   if (json.features?.length > 1) {
     return { ...json, features: [json.features[0]] };
   }
   return json;
 }
 
-export default function InteractiveMap({
+async function fetchBoundaryGeoJSON(
+  query: string,
+): Promise<BoundaryGeoJSON | null> {
+  const cached = boundaryCache.get(query);
+  if (cached) return cached;
+
+  const params = new URLSearchParams({ q: query });
+  const res = await fetch(`/api/boundary?${params.toString()}`);
+  if (!res.ok) {
+    throw new Error(`Failed to fetch boundary: ${res.status}`);
+  }
+
+  const normalized = normalizeBoundary((await res.json()) as BoundaryGeoJSON);
+  boundaryCache.set(query, normalized);
+  return normalized;
+}
+
+function InteractiveMap({
   isAnimating,
   onThrow,
   disabled,
@@ -179,6 +193,9 @@ export default function InteractiveMap({
           <TileLayer
             url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
             attribution='&copy; <a href="https://carto.com/">CARTO</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+            updateWhenZooming={false}
+            updateWhenIdle={true}
+            keepBuffer={2}
           />
           {result && (
             <Marker
@@ -211,6 +228,8 @@ export default function InteractiveMap({
   );
 }
 
+export default memo(InteractiveMap);
+
 function MapController({
   query,
   hasResult,
@@ -226,8 +245,8 @@ function MapController({
   const [cityBoundary, setCityBoundary] = useState<BoundaryGeoJSON | null>(
     null,
   );
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const fitBoundsQueryRef = useRef<string | null>(null);
 
   useMapEvents({
     click(e: LeafletMouseEvent) {
@@ -249,12 +268,11 @@ function MapController({
       if (!query) {
         setData(null);
         setError(null);
+        fitBoundsQueryRef.current = null;
         return;
       }
 
-      setLoading(true);
       setError(null);
-      setData(null);
 
       try {
         const filtered = await fetchBoundaryGeoJSON(query);
@@ -264,10 +282,6 @@ function MapController({
         if (cancelled) return;
         console.error("Failed to fetch boundary data");
         setError("境界データの取得に失敗しました");
-      } finally {
-        if (!cancelled) {
-          setLoading(false);
-        }
       }
     };
 
@@ -354,27 +368,34 @@ function MapController({
     [],
   );
 
-  if (loading || error) {
+  if (error && !data) {
     return null;
   }
 
   const showBaseBoundary = !(mode === "prefecture" && result && cityBoundary);
+  const cityQuery =
+    mode === "prefecture" && result
+      ? `${prefectureName} ${result.name}`.trim()
+      : null;
 
   return (
     <>
       {showBaseBoundary && data && (
         <LeafletGeoJSON
-          key={JSON.stringify(data)}
+          key={`base:${query}`}
           data={data as never}
           style={style}
           pointToLayer={pointToLayer as never}
           eventHandlers={{
             add(e: LayerEvent) {
+              if (hasResult || fitBoundsQueryRef.current === query) return;
+              fitBoundsQueryRef.current = query;
+
               const layer = e.target as L.GeoJSON;
               try {
                 const bounds = layer.getBounds();
-                if (bounds && bounds.isValid && bounds.isValid()) {
-                  map.flyToBounds(bounds, { padding: [60, 60] });
+                if (bounds?.isValid?.()) {
+                  map.flyToBounds(bounds, { padding: [60, 60], duration: 0.8 });
                 }
               } catch {
                 // ignore
@@ -385,7 +406,7 @@ function MapController({
       )}
       {cityBoundary && (
         <LeafletGeoJSON
-          key={JSON.stringify(cityBoundary)}
+          key={`city:${cityQuery}`}
           data={cityBoundary as never}
           style={cityStyle}
           pointToLayer={pointToLayer as never}
