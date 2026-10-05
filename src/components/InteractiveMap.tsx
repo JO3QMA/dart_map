@@ -176,9 +176,10 @@ export default function InteractiveMap({
           zoomControl={false}
           attributionControl={false}
         >
+          {/* CARTO の無料タイルは API キー必須になったため、API キー不要の OSM 公式タイルを使用する */}
           <TileLayer
-            url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
-            attribution='&copy; <a href="https://carto.com/">CARTO</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+            url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           />
           {result && (
             <Marker
