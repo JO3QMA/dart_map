@@ -110,7 +110,7 @@ export default function App() {
           if (url) {
             history.replaceState(null, "", url);
           }
-        }, 800);
+        }, 700);
       } catch {
         console.error("Failed to fetch target");
         setIsAnimating(false);
@@ -148,6 +148,14 @@ export default function App() {
     setShowModal(false);
   }, []);
 
+  const handleRegionLabelsChange = useCallback(
+    (labels: { prefecture: string; city: string }) => {
+      setPrefectureName(labels.prefecture);
+      setCityName(labels.city);
+    },
+    [],
+  );
+
   return (
     <div className="relative w-screen h-screen overflow-hidden">
       <div
@@ -178,10 +186,7 @@ export default function App() {
           onCityChange={setSelectedCity}
           mergeDesignatedCities={mergeDesignatedCities}
           onMergeDesignatedCitiesChange={setMergeDesignatedCities}
-          onRegionLabelsChange={({ prefecture, city }) => {
-            setPrefectureName(prefecture);
-            setCityName(city);
-          }}
+          onRegionLabelsChange={handleRegionLabelsChange}
         />
       </div>
 
@@ -194,7 +199,7 @@ export default function App() {
         />
       )}
 
-      <footer className="pointer-events-none fixed bottom-0 left-0 w-full z-[1000] bg-white/75 backdrop-blur-md px-4 py-1.5">
+      <footer className="pointer-events-none fixed bottom-0 left-0 w-full z-[1000] bg-white/92 px-4 py-1.5">
         <div className="pointer-events-auto flex w-full flex-wrap items-center justify-center gap-x-3 gap-y-1 text-[11px] text-gray-500">
           <span>© 2026 ダーツの旅 — バーチャル旅行アプリ</span>
           <span>·</span>

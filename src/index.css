@@ -242,16 +242,14 @@
    ========================================= */
 
   .glass-card {
-    background: var(--color-surface);
-    backdrop-filter: blur(18px);
+    background: rgba(255, 255, 255, 0.96);
     border: 1px solid var(--color-border);
     border-radius: 1.25rem;
     box-shadow: var(--shadow-soft);
   }
 
   .glass-card-floating {
-    background-color: rgba(255, 255, 255, 0.9);
-    backdrop-filter: blur(8px);
+    background-color: rgba(255, 255, 255, 0.96);
   }
 
   /* ガイドテキスト用：地図上での視認性を高めるための軽いチップ風背景 */
@@ -261,8 +259,7 @@
     gap: 0.25rem;
     padding: 0.4rem 0.75rem;
     border-radius: 999px;
-    background-color: rgba(255, 255, 255, 0.9);
-    backdrop-filter: blur(6px);
+    background-color: rgba(255, 255, 255, 0.96);
     box-shadow: 0 6px 18px -10px rgba(15, 23, 42, 0.4);
   }
 
@@ -448,8 +445,7 @@
   .modal-overlay {
     position: fixed;
     inset: 0;
-    background: rgba(15, 23, 42, 0.5);
-    backdrop-filter: blur(4px);
+    background: rgba(15, 23, 42, 0.55);
     display: flex;
     align-items: center;
     justify-content: center;

@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import type { Region } from "../types";
 import { D1RegionRepository } from "./infrastructure/database/D1RegionRepository";
-import { drawRegion, getRegions } from "./regions";
+import { clearDrawCaches, drawRegion, getRegions } from "./regions";
 
 function city(id: string, name: string, parentId?: string): Region {
   return {
@@ -106,6 +106,7 @@ describe("drawRegion", () => {
   let repo: D1RegionRepository;
 
   beforeEach(() => {
+    clearDrawCaches();
     repo = {
       findByType: vi.fn(),
       findByTypeAndParent: vi.fn(),
@@ -115,6 +116,7 @@ describe("drawRegion", () => {
   });
 
   afterEach(() => {
+    clearDrawCaches();
     vi.restoreAllMocks();
   });
 

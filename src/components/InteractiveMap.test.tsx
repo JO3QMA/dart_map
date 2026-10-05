@@ -1,7 +1,7 @@
 import { render, screen, act, waitFor } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { useEffect, type ReactNode } from "react";
-import InteractiveMap from "./InteractiveMap";
+import InteractiveMap, { clearBoundaryCache } from "./InteractiveMap";
 import type { Region } from "../types";
 
 type MapClickHandler = (e: {
@@ -115,6 +115,7 @@ const geoJsonResponse = {
 
 describe("InteractiveMap", () => {
   beforeEach(() => {
+    clearBoundaryCache();
     mapClickHandler = undefined;
     geoJsonBoundsThrows = false;
     geoJsonBoundsValid = true;

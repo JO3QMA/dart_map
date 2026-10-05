@@ -27,6 +27,15 @@ function pickRandom<T>(items: T[]): T {
   return items[index];
 }
 
+// ponytail: isolate 内のメモリキャッシュ。D1 全件取得＋マージは初回のみ。
+const mergedCitiesCache = new Map<string, Region[]>();
+const wardIdsCache = new Map<string, string[]>();
+
+export function clearDrawCaches(): void {
+  mergedCitiesCache.clear();
+  wardIdsCache.clear();
+}
+
 export async function getRegions(
   repo: D1RegionRepository,
   input: GetRegionsInput,
@@ -65,10 +74,14 @@ export async function drawRegion(
     if (!input.mergeDesignated) {
       return repo.findRandom("city", input.parentId);
     }
-    const cities = await repo.findByTypeAndParent("city", input.parentId);
-    const designated = cities.filter((c) => isDesignatedCityId(c.id));
-    const raw = cities.filter((c) => !isDesignatedCityId(c.id));
-    const merged = mergeCitiesWithDesignated(raw, designated);
+    let merged = mergedCitiesCache.get(input.parentId);
+    if (!merged) {
+      const cities = await repo.findByTypeAndParent("city", input.parentId);
+      const designated = cities.filter((c) => isDesignatedCityId(c.id));
+      const raw = cities.filter((c) => !isDesignatedCityId(c.id));
+      merged = mergeCitiesWithDesignated(raw, designated);
+      mergedCitiesCache.set(input.parentId, merged);
+    }
     if (merged.length === 0) return null;
     return pickRandom(merged);
   }
@@ -78,14 +91,18 @@ export async function drawRegion(
       throw new Error("parent_id is required when mode=city");
     }
     if (isDesignatedCityId(input.parentId)) {
-      const cityName = getWardFilter(input.parentId);
-      if (!cityName) return null;
-      const prefId = input.parentId.split("-")[1];
-      if (!prefId) return null;
-      const cities = await repo.findByTypeAndParent("city", prefId);
-      const wardIds = cities
-        .filter((c) => c.name.startsWith(cityName) && c.name !== cityName)
-        .map((c) => c.id);
+      let wardIds = wardIdsCache.get(input.parentId);
+      if (!wardIds) {
+        const cityName = getWardFilter(input.parentId);
+        if (!cityName) return null;
+        const prefId = input.parentId.split("-")[1];
+        if (!prefId) return null;
+        const cities = await repo.findByTypeAndParent("city", prefId);
+        wardIds = cities
+          .filter((c) => c.name.startsWith(cityName) && c.name !== cityName)
+          .map((c) => c.id);
+        wardIdsCache.set(input.parentId, wardIds);
+      }
       if (wardIds.length === 0) return null;
       return repo.findRandomTownAmongParentIds(wardIds);
     }
