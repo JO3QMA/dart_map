@@ -62,9 +62,14 @@ npm run dev:wrangler
 | コマンド                | 説明                                                                                                                |
 | ----------------------- | ------------------------------------------------------------------------------------------------------------------- |
 | `npm run dev`           | Vite のみでフロント開発（API は別途 Worker が必要）                                                                 |
-| `npm run build`         | TypeScript ビルド ＋ Vite ビルド（デプロイ時はシード生成は行わない。必要なら手動で `npm run generate:seed` を実行） |
+| `npm run typecheck`     | 型チェックのみ（[tsrs](https://github.com/oxc-project/tsrs) / TypeScript 7 互換）                                   |
+| `npm run build`         | 型チェック（tsrs）＋ Vite ビルド（デプロイ時はシード生成は行わない。必要なら手動で `npm run generate:seed` を実行） |
 | `npm run generate:seed` | `scripts/seed.sql` を再生成（上書き時は `FORCE_REGENERATE_REGIONS=1 npm run generate:seed`）                        |
 | `npm run dev:wrangler`  | ビルド後に Wrangler 開発サーバー起動（推奨）                                                                        |
+
+#### エディタ（VS Code / Cursor）
+
+型チェックと同じ [tsrs](https://github.com/oxc-project/tsrs) を言語サーバーとして使う場合は、設定 `typescript.tsdk` を `./node_modules/tsrs/tsdk` に向けます（macOS / Linux）。LSP は `npx tsrs --lsp -stdio` でも起動できます。詳細は tsrs の [LSP ドキュメント](https://github.com/oxc-project/tsrs/blob/main/docs/LSP.md) を参照してください。
 
 ---
 

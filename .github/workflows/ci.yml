@@ -64,6 +64,9 @@ jobs:
       - name: Lint (TypeScript / ESLint)
         run: npm run lint
 
+      - name: Type check (tsrs)
+        run: npm run typecheck
+
       - name: Format (Prettier)
         run: npm run format:check
 
